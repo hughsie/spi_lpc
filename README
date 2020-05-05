@@ -1,0 +1,45 @@
+SPI_LPC Kernel Module
+=====================
+
+This out-of-tree kernel modules exports the configuration attributes for the
+system SPI chip. The medium-term aim is to get this module included in Linus'
+tree so it can be included in distro kernels and so the new sysfs attributes
+are avilable to fwupd when SecureBoot is turned on.
+
+This kernel module currently exports three files:
+
+    /sys/kernel/security/spi/bioswe
+    /sys/kernel/security/spi/ble
+    /sys/kernel/security/spi/smm_bwp
+
+These are used by fwupd to help calculate the Host Security ID. More attributes
+will be added over time.
+
+Building
+--------
+
+Ensure you have kernel headers installed (e.g. `dnf install kernel-headers`)
+and then simply:
+
+    $ make
+    make -C /lib/modules/`uname -r`/build M=$PWD
+    make[1]: Entering directory '/usr/src/kernels/5.6.7'
+      CC [M]  /home/hughsie/Code/spi_lpc/spi_lpc.o
+      MODPOST 1 modules
+      CC [M]  /home/hughsie/Code/spi_lpc/spi_lpc.mod.o
+      LD [M]  /home/hughsie/Code/spi_lpc/spi_lpc.ko
+
+Then you can insert the module into the running kernel (assuming SecureBoot is
+turned off) using:
+
+    sudo insmod spi_lpc.ko
+
+You can then print the various LPC registers using:
+
+    sudo cat /sys/kernel/security/spi/bioswe
+    sudo cat /sys/kernel/security/spi/ble
+    sudo cat /sys/kernel/security/spi/smm_bwp
+
+To remove the module use:
+
+    rmmod spi_lpc
