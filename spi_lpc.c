@@ -160,18 +160,18 @@ static int __init mod_init(void)
 
 	return 0;
 out:
-	securityfs_remove(spi_bioswe);
-	securityfs_remove(spi_ble);
 	securityfs_remove(spi_smm_bwp);
+	securityfs_remove(spi_ble);
+	securityfs_remove(spi_bioswe);
 	securityfs_remove(spi_dir);
 	return -1;
 }
 
 static void __exit mod_exit(void)
 {
-	securityfs_remove(spi_bioswe);
-	securityfs_remove(spi_ble);
 	securityfs_remove(spi_smm_bwp);
+	securityfs_remove(spi_ble);
+	securityfs_remove(spi_bioswe);
 	securityfs_remove(spi_dir);
 }
 
