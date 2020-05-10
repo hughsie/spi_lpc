@@ -25,12 +25,16 @@
  */
 static const struct pci_device_id pci_tbl[] = {
 	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x02a4)}, /* Comet Lake SPI */
+	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x06a4)}, /* Comet Lake H */
 	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x34a4)}, /* Ice Lake-LP SPI */
+	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x4b24)}, /* Elkhart Lake */
+	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x4da4)}, /* Jasper Lake */
 	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x9c66)}, /* 8 Series SPI */
 	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x9ce6)}, /* Wildcat Point-LP GSPI */
 	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x9d2a)}, /* Sunrise Point-LP/SPI */
 	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x9d4e)}, /* Sunrise Point LPC/eSPI */
 	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x9da4)}, /* Cannon Point-LP SPI */
+	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0xa0a4)}, /* Tiger Lake */
 	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0xa140)}, /* Sunrise Point-H LPC */
 	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0xa141)}, /* Sunrise Point-H LPC */
 	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0xa142)}, /* Sunrise Point-H LPC */
@@ -65,6 +69,7 @@ static const struct pci_device_id pci_tbl[] = {
 	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0xa306)}, /* Q370 LPC/eSPI */
 	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0xa30c)}, /* QM370 LPC/eSPI */
 	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0xa324)}, /* Cannon Lake PCH SPI */
+	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0xa3a4)}, /* Comet Lake V */
 	{0, }
 };
 MODULE_DEVICE_TABLE(pci, pci_tbl);
