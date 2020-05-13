@@ -8,9 +8,9 @@ are avilable to fwupd when SecureBoot is turned on.
 
 This kernel module currently exports three files:
 
-    /sys/kernel/security/spi/bioswe
-    /sys/kernel/security/spi/ble
-    /sys/kernel/security/spi/smm_bwp
+    /sys/kernel/security/firmware/bioswe
+    /sys/kernel/security/firmware/ble
+    /sys/kernel/security/firmware/smm_bwp
 
 These are used by fwupd to help calculate the Host Security ID. More attributes
 will be added over time.
@@ -36,9 +36,9 @@ turned off) using:
 
 You can then print the various LPC registers using:
 
-    sudo cat /sys/kernel/security/spi/bioswe
-    sudo cat /sys/kernel/security/spi/ble
-    sudo cat /sys/kernel/security/spi/smm_bwp
+    sudo cat /sys/kernel/security/firmware/bioswe
+    sudo cat /sys/kernel/security/firmware/ble
+    sudo cat /sys/kernel/security/firmware/smm_bwp
 
 To remove the module use:
 

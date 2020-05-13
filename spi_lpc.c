@@ -24,15 +24,8 @@
  * MODULE_DEVICE_TABLE.  We do not actually register a pci_driver.
  */
 static const struct pci_device_id pci_tbl[] = {
-	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x02a4)}, /* Comet Lake SPI */
-	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x06a4)}, /* Comet Lake H */
-	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x34a4)}, /* Ice Lake-LP SPI */
-	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x4b24)}, /* Elkhart Lake */
-	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x4da4)}, /* Jasper Lake */
-	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x9ce6)}, /* Wildcat Point-LP GSPI */
-	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x9d2a)}, /* Sunrise Point-LP/SPI */
+	/* ISA bridge, so 00:1f.0 -> drivers/mfd/lpc_ich.c */
 	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x9d4e)}, /* Sunrise Point LPC/eSPI */
-	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x9da4)}, /* Cannon Point-LP SPI */
 	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0xa0a4)}, /* Tiger Lake */
 	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0xa140)}, /* Sunrise Point-H LPC */
 	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0xa141)}, /* Sunrise Point-H LPC */
@@ -67,8 +60,20 @@ static const struct pci_device_id pci_tbl[] = {
 	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0xa305)}, /* Z390 LPC/eSPI */
 	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0xa306)}, /* Q370 LPC/eSPI */
 	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0xa30c)}, /* QM370 LPC/eSPI */
+	/* PCI device, so 00:1f.5
+	 *  -> drivers/mtd/spi-nor/controllers/intel-spi-pci.c */
+	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x02a4)}, /* Comet Lake SPI */
+	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x06a4)}, /* Comet Lake H */
+	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x34a4)}, /* Ice Lake-LP SPI */
+	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x4b24)}, /* Elkhart Lake */
+	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x4da4)}, /* Jasper Lake */
+	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x9da4)}, /* Cannon Point-LP SPI */
+	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0xa1a4)}, /* C620 SPI */
 	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0xa324)}, /* Cannon Lake PCH SPI */
 	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0xa3a4)}, /* Comet Lake V */
+	/* others? */
+	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x9ce6)}, /* 00:15.4 - Wildcat Point-LP GSPI */
+	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x9d2a)}, /* 00:1e.3 - Sunrise Point-LP/SPI */
 	{0, }
 };
 MODULE_DEVICE_TABLE(pci, pci_tbl);
@@ -139,7 +144,7 @@ static int __init mod_init(void)
 	if (!dev)
 		return -ENODEV;
 
-	spi_dir = securityfs_create_dir("spi", NULL);
+	spi_dir = securityfs_create_dir("firmware", NULL);
 	if (IS_ERR(spi_dir))
 		return -1;
 

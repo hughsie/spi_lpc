@@ -1,0 +1,23 @@
+What:		/sys/kernel/security/firmware/bioswe
+Date:		May 2020
+KernelVersion:	5.7.0
+Contact:	platform-driver-x86@vger.kernel.org
+Description:	If the system firmware set BIOS Write Enable.
+		0: writes disabled, 1: writes enabled.
+Users:		https://github.com/fwupd/fwupd
+
+What:		/sys/kernel/security/firmware/ble
+Date:		May 2020
+KernelVersion:	5.7.0
+Contact:	platform-driver-x86@vger.kernel.org
+Description:	If the system firmware set Bios Lock Enable.
+		0: SMM lock disabled, 1: SMM lock enabled.
+Users:		https://github.com/fwupd/fwupd
+
+What:		/sys/kernel/security/firmware/smm_bwp
+Date:		May 2020
+KernelVersion:	5.7.0
+Contact:	platform-driver-x86@vger.kernel.org
+Description:	If the system firmware set SMM Bios Write Protect.
+		0: writes disabled unless in SMM, 1: writes enabled.
+Users:		https://github.com/fwupd/fwupd
