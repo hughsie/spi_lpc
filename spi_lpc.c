@@ -29,7 +29,6 @@ static const struct pci_device_id pci_tbl[] = {
 	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x34a4)}, /* Ice Lake-LP SPI */
 	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x4b24)}, /* Elkhart Lake */
 	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x4da4)}, /* Jasper Lake */
-	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x9c66)}, /* 8 Series SPI */
 	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x9ce6)}, /* Wildcat Point-LP GSPI */
 	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x9d2a)}, /* Sunrise Point-LP/SPI */
 	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x9d4e)}, /* Sunrise Point LPC/eSPI */
