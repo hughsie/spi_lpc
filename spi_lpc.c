@@ -84,7 +84,7 @@ const u8 bios_cntl_off = BIOS_CNTL_REG;
 static ssize_t bioswe_read(struct file *filp, char __user *buf,
 			   size_t count, loff_t *ppos)
 {
-	char tmp[2];
+	char tmp[3];
 	u8 bios_cntl_val;
 
 	pci_read_config_byte(dev, bios_cntl_off, &bios_cntl_val);
@@ -100,7 +100,7 @@ static const struct file_operations spi_bioswe_ops = {
 static ssize_t ble_read(struct file *filp, char __user *buf,
 			size_t count, loff_t *ppos)
 {
-	char tmp[2];
+	char tmp[3];
 	u8 bios_cntl_val;
 
 	pci_read_config_byte(dev, bios_cntl_off, &bios_cntl_val);
@@ -116,7 +116,7 @@ static const struct file_operations spi_ble_ops = {
 static ssize_t smm_bwp_read(struct file *filp, char __user *buf,
 			    size_t count, loff_t *ppos)
 {
-	char tmp[2];
+	char tmp[3];
 	u8 bios_cntl_val;
 
 	pci_read_config_byte(dev, bios_cntl_off, &bios_cntl_val);
