@@ -1,22 +1,8 @@
-ifneq ($(KERNELRELEASE),)
-# kbuild part of makefile
-obj-m  := spi_lpc.o
-8123-y := spi_lpc.o
+spi_lpc-y := spi_lpc_main.o data_access.o low_level_access.o
+obj-m += spi_lpc.o
 
-else
-# normal makefile
-KDIR ?= /lib/modules/`uname -r`/build
+all:
+	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
 
-default:
-	$(MAKE) -C $(KDIR) M=$$PWD
-
-in: default
-	sudo insmod spi_lpc.ko
-	sudo cat /sys/kernel/security/spi/bioswe
-	sudo cat /sys/kernel/security/spi/ble
-	sudo cat /sys/kernel/security/spi/smm_bwp
-
-out:
-	sudo rmmod spi_lpc
-
-endif
+clean:
+	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
