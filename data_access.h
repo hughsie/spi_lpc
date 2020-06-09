@@ -1,3 +1,13 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * SPI LPC flash platform security driver
+ *
+ * Copyright 2020 (c) Daniel Gutson (daniel.gutson@eclypsium.com)
+ *
+ * This file is licensed under  the terms of the GNU General Public
+ * License version 2. This program is licensed "as is" without any
+ * warranty of any kind, whether express or implied.
+ */
 #ifndef DATA_ACCESS_H
 #define DATA_ACCESS_H
 #include <linux/types.h>
