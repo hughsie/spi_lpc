@@ -236,6 +236,6 @@ module_init(mod_init);
 module_exit(mod_exit);
 
 MODULE_DESCRIPTION("SPI LPC flash platform security driver");
-MODULE_AUTHOR(
-	"Richard Hughes <richard@hughsie.com>, Daniel Gutson <daniel@eclypsium.com>");
+MODULE_AUTHOR("Richard Hughes <richard@hughsie.com>");
+MODULE_AUTHOR("Daniel Gutson <daniel.gutson@eclypsium.com>");
 MODULE_LICENSE("GPL");
