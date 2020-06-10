@@ -49,10 +49,12 @@ static int get_pch_arch(enum PCH_Arch *pch_arch)
 	u16 pch_vid;
 	u16 pch_did;
 	int ret = get_pci_vid_did(0, 0x1f, 0, &pch_vid, &pch_did);
-	if (ret == 0) {
-		pr_info("PCH VID: %x - DID: %x\n", pch_vid, pch_did);
-		ret = viddid2pch_arch(pch_vid, pch_did, pch_arch);
-	}
+	if (ret != 0)
+		return ret;
+
+	pr_info("PCH VID: %x - DID: %x\n", pch_vid, pch_did);
+	ret = viddid2pch_arch(pch_vid, pch_did, pch_arch);
+
 	return ret;
 }
 
@@ -61,10 +63,12 @@ static int get_cpu_arch(enum CPU_Arch *cpu_arch)
 	u16 cpu_vid;
 	u16 cpu_did;
 	int ret = get_pci_vid_did(0, 0, 0, &cpu_vid, &cpu_did);
-	if (ret == 0) {
-		pr_info("CPU VID: %x - DID: %x\n", cpu_vid, cpu_did);
-		ret = viddid2cpu_arch(cpu_vid, cpu_did, cpu_arch);
-	}
+	if (ret != 0)
+		return ret;
+
+	pr_info("CPU VID: %x - DID: %x\n", cpu_vid, cpu_did);
+	ret = viddid2cpu_arch(cpu_vid, cpu_did, cpu_arch);
+
 	return ret;
 }
 
@@ -81,7 +85,9 @@ struct dentry *spi_bioswe;
 struct dentry *spi_ble;
 struct dentry *spi_smm_bwp;
 
-// Buffer to return: always 3 because of the following chars: value \n \0
+/* Buffer to return: always 3 because of the following chars:
+       value \n \0
+*/
 #define BUFFER_SIZE 3
 
 static ssize_t bioswe_read(struct file *filp, char __user *buf, size_t count,
@@ -97,14 +103,13 @@ static ssize_t bioswe_read(struct file *filp, char __user *buf, size_t count,
 		if (ret == 0)
 			ret = read_BC_BIOSWE(&bc, &bioswe);
 
-		if (ret == 0) {
-			pr_debug("BIOSWE: %lld\n", bioswe);
-			sprintf(tmp, "%d\n", (int)bioswe & 1);
-			ret = simple_read_from_buffer(buf, count, ppos, tmp,
-						      sizeof(tmp));
-		} else {
-			pr_err("Error reading BIOSWE\n");
-		}
+		if (ret != 0)
+			return ret;
+		pr_debug("BIOSWE: %lld\n", bioswe);
+		sprintf(tmp, "%d\n", (int)bioswe & 1);
+		ret = simple_read_from_buffer(buf, count, ppos, tmp,
+					      sizeof(tmp));
+
 		return ret;
 	} else {
 		return 0; // nothing else to read
@@ -128,14 +133,13 @@ static ssize_t ble_read(struct file *filp, char __user *buf, size_t count,
 		if (ret == 0)
 			ret = read_BC_BLE(&bc, &ble);
 
-		if (ret == 0) {
-			pr_debug("BLE: %lld\n", ble);
-			sprintf(tmp, "%d\n", (int)ble & 1);
-			ret = simple_read_from_buffer(buf, count, ppos, tmp,
-						      sizeof(tmp));
-		} else {
-			pr_err("Error reading BLE\n");
-		}
+		if (ret != 0)
+			return ret;
+
+		pr_debug("BLE: %lld\n", ble);
+		sprintf(tmp, "%d\n", (int)ble & 1);
+		ret = simple_read_from_buffer(buf, count, ppos, tmp,
+					      sizeof(tmp));
 
 		return ret;
 	} else {
@@ -160,14 +164,13 @@ static ssize_t smm_bwp_read(struct file *filp, char __user *buf, size_t count,
 		if (ret == 0)
 			ret = read_BC_SMM_BWP(&bc, &smm_bwp);
 
-		if (ret == 0) {
-			pr_debug("SMM_BWP: %lld\n", smm_bwp);
-			sprintf(tmp, "%d\n", (int)smm_bwp & 1);
-			ret = simple_read_from_buffer(buf, count, ppos, tmp,
-						      sizeof(tmp));
-		} else {
-			pr_err("Error reading SMM_BWP\n");
-		}
+		if (ret != 0)
+			return ret;
+
+		pr_debug("SMM_BWP: %lld\n", smm_bwp);
+		sprintf(tmp, "%d\n", (int)smm_bwp & 1);
+		ret = simple_read_from_buffer(buf, count, ppos, tmp,
+					      sizeof(tmp));
 
 		return ret;
 	} else {

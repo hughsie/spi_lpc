@@ -69,7 +69,6 @@ struct RegisterArch {
 	};
 };
 
-// registers
 struct SBASE_atom_avn_byt {
 	u64 MEMI;
 	u64 Enable;

@@ -7,20 +7,12 @@
 #endif
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 25)
-/* 'ioremap_nocache' was deprecated in kernels >= 5.6, so instead we
-     use 'ioremap' which is no-cache by default since kernels 2.6.25. */
-#define IOREMAP_NO_CACHE(address, size) ioremap(address, size)
-#else /* KERNEL_VERSION < 2.6.25 */
-#define IOREMAP_NO_CACHE(address, size) ioremap_nocache(address, size)
-#endif
-
 #define GENERIC_MMIO_READ(Type, Suffix, function)                              \
 	int mmio_read_##Suffix(u64 phys_address, Type *value)                  \
 	{                                                                      \
 		int ret = 0;                                                   \
 		void __iomem *mapped_address =                                 \
-			IOREMAP_NO_CACHE(phys_address, sizeof(Type));          \
+			ioremap(phys_address, sizeof(Type));                   \
 		pr_info("Reading MMIO 0x%llx 0x%lx\n", phys_address,           \
 			sizeof(Type));                                         \
 		if (mapped_address != NULL) {                                  \

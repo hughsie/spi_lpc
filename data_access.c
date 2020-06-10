@@ -12,54 +12,36 @@
 #include "low_level_access.h"
 #include "data_access.h"
 
-#define GENERIC_EXTRACT_MASK(Type, Suffix)                                     \
-	static Type extract_mask_##Suffix(Type value, u32 start, u32 size)     \
-	{                                                                      \
-		Type mask = (((Type)1u << size) - 1u) << start;                \
-		return value & mask;                                           \
-	}
+#define extraction_mask(type, value, start, size)                              \
+	((((type)1u << (size)) - 1u) << (start))
 
-#define GENERIC_EXTRACT(Type, Suffix)                                          \
-	static Type extract_##Suffix(Type value, u32 start, u32 size)          \
-	{                                                                      \
-		Type mask = ((Type)1u << size) - 1u;                           \
-		return (value >> start) & mask;                                \
-	}
+#define extract_bits(type, value, start, size)                                 \
+	((value)&extraction_mask(type, value, start, size))
 
-GENERIC_EXTRACT(u8, byte)
-/*GENERIC_EXTRACT(u16, word) not used */
-GENERIC_EXTRACT(u32, dword)
-/*GENERIC_EXTRACT(u64, qword) not used */
-/*GENERIC_EXTRACT_MASK(u8, byte) not used */
-/*GENERIC_EXTRACT_MASK(u16, word) not used */
-GENERIC_EXTRACT_MASK(u32, dword)
-/*GENERIC_EXTRACT_MASK(u64, qword) not used */
+#define extract_bits_shifted(type, value, start, size)                         \
+	(extract_bits(type, value, start, size) >> (start))
 
-#undef GENERIC_EXTRACT_MASK
-#undef GENERIC_EXTRACT
-
-// functions
 static int read_SBASE_atom_avn_byt(struct SBASE_atom_avn_byt *reg)
 {
-	int ret;
 	u32 value;
-	ret = pci_read_dword(&value, 0x0, 0x1f, 0x0, 0x54);
+	const int ret = pci_read_dword(&value, 0x0, 0x1f, 0x0, 0x54);
 
-	if (ret == 0) {
-		reg->MEMI = extract_dword(value, 0, 1);
-		reg->Enable = extract_dword(value, 1, 1);
-		reg->ADDRNG = extract_dword(value, 2, 1);
-		reg->PREF = extract_dword(value, 3, 1);
-		reg->Base = extract_mask_dword(value, 9, 23);
-	}
-	return ret;
+	if (ret != 0)
+		return ret;
+
+	reg->MEMI = extract_bits_shifted(u32, value, 0, 1);
+	reg->Enable = extract_bits_shifted(u32, value, 1, 1);
+	reg->ADDRNG = extract_bits_shifted(u32, value, 2, 1);
+	reg->PREF = extract_bits_shifted(u32, value, 3, 1);
+	reg->Base = extract_bits(u32, value, 9, 23);
+
+	return 0;
 }
 
-int read_SBASE(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch,
+int read_SBASE(enum PCH_Arch pch_arch __maybe_unused, enum CPU_Arch cpu_arch,
 	       struct SBASE *reg)
 {
 	int ret = 0;
-	(void)pch_arch;
 	reg->register_arch.source = RegSource_CPU;
 	reg->register_arch.cpu_arch = cpu_arch;
 	switch (cpu_arch) {
@@ -75,80 +57,84 @@ int read_SBASE(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch,
 
 static int read_BC_pch_3xx_4xx_5xx(struct BC_pch_3xx_4xx_5xx *reg)
 {
-	int ret;
 	u32 value;
-	ret = pci_read_dword(&value, 0x0, 0x1f, 0x5, 0xdc);
+	const int ret = pci_read_dword(&value, 0x0, 0x1f, 0x5, 0xdc);
 
-	if (ret == 0) {
-		reg->BIOSWE = extract_dword(value, 0, 1);
-		reg->BLE = extract_dword(value, 1, 1);
-		reg->SRC = extract_dword(value, 2, 2);
-		reg->TSS = extract_dword(value, 4, 1);
-		reg->SMM_BWP = extract_dword(value, 5, 1);
-		reg->BBS = extract_dword(value, 6, 1);
-		reg->BILD = extract_dword(value, 7, 1);
-		reg->SPI_SYNC_SS = extract_dword(value, 8, 1);
-		reg->SPI_ASYNC_SS = extract_dword(value, 10, 1);
-		reg->ASE_BWP = extract_dword(value, 11, 1);
-	}
-	return ret;
+	if (ret != 0)
+		return ret;
+
+	reg->BIOSWE = extract_bits_shifted(u32, value, 0, 1);
+	reg->BLE = extract_bits_shifted(u32, value, 1, 1);
+	reg->SRC = extract_bits_shifted(u32, value, 2, 2);
+	reg->TSS = extract_bits_shifted(u32, value, 4, 1);
+	reg->SMM_BWP = extract_bits_shifted(u32, value, 5, 1);
+	reg->BBS = extract_bits_shifted(u32, value, 6, 1);
+	reg->BILD = extract_bits_shifted(u32, value, 7, 1);
+	reg->SPI_SYNC_SS = extract_bits_shifted(u32, value, 8, 1);
+	reg->SPI_ASYNC_SS = extract_bits_shifted(u32, value, 10, 1);
+	reg->ASE_BWP = extract_bits_shifted(u32, value, 11, 1);
+
+	return 0;
 }
 
 static int
 read_BC_cpu_snb_jkt_ivb_ivt_bdx_hsx(struct BC_cpu_snb_jkt_ivb_ivt_bdx_hsx *reg)
 {
-	int ret;
 	u32 value;
-	ret = pci_read_dword(&value, 0x0, 0x1f, 0x5, 0xdc);
+	const int ret = pci_read_dword(&value, 0x0, 0x1f, 0x5, 0xdc);
 
-	if (ret == 0) {
-		reg->BIOSWE = extract_dword(value, 0, 1);
-		reg->BLE = extract_dword(value, 1, 1);
-		reg->SRC = extract_dword(value, 2, 2);
-		reg->TSS = extract_dword(value, 4, 1);
-		reg->SMM_BWP = extract_dword(value, 5, 1);
-	}
-	return ret;
+	if (ret != 0)
+		return ret;
+
+	reg->BIOSWE = extract_bits_shifted(u32, value, 0, 1);
+	reg->BLE = extract_bits_shifted(u32, value, 1, 1);
+	reg->SRC = extract_bits_shifted(u32, value, 2, 2);
+	reg->TSS = extract_bits_shifted(u32, value, 4, 1);
+	reg->SMM_BWP = extract_bits_shifted(u32, value, 5, 1);
+
+	return 0;
 }
 
 static int read_BC_cpu_skl_kbl_cfl(struct BC_cpu_skl_kbl_cfl *reg)
 {
-	int ret;
 	u32 value;
-	ret = pci_read_dword(&value, 0x0, 0x1f, 0x5, 0xdc);
+	const int ret = pci_read_dword(&value, 0x0, 0x1f, 0x5, 0xdc);
 
-	if (ret == 0) {
-		reg->BIOSWE = extract_dword(value, 0, 1);
-		reg->BLE = extract_dword(value, 1, 1);
-		reg->SRC = extract_dword(value, 2, 2);
-		reg->TSS = extract_dword(value, 4, 1);
-		reg->SMM_BWP = extract_dword(value, 5, 1);
-		reg->BBS = extract_dword(value, 6, 1);
-		reg->BILD = extract_dword(value, 7, 1);
-	}
-	return ret;
+	if (ret != 0)
+		return ret;
+
+	reg->BIOSWE = extract_bits_shifted(u32, value, 0, 1);
+	reg->BLE = extract_bits_shifted(u32, value, 1, 1);
+	reg->SRC = extract_bits_shifted(u32, value, 2, 2);
+	reg->TSS = extract_bits_shifted(u32, value, 4, 1);
+	reg->SMM_BWP = extract_bits_shifted(u32, value, 5, 1);
+	reg->BBS = extract_bits_shifted(u32, value, 6, 1);
+	reg->BILD = extract_bits_shifted(u32, value, 7, 1);
+
+	return 0;
 }
 
 static int read_BC_cpu_apl_glk(struct BC_cpu_apl_glk *reg)
 {
-	int ret;
 	u32 value;
-	ret = pci_read_dword(&value, 0x0, 0xd, 0x2, 0xdc);
+	const int ret = pci_read_dword(&value, 0x0, 0xd, 0x2, 0xdc);
 
-	if (ret == 0) {
-		reg->BIOSWE = extract_dword(value, 0, 1);
-		reg->BLE = extract_dword(value, 1, 1);
-		reg->SRC = extract_dword(value, 2, 2);
-		reg->TSS = extract_dword(value, 4, 1);
-		reg->SMM_BWP = extract_dword(value, 5, 1);
-		reg->BBS = extract_dword(value, 6, 1);
-		reg->BILD = extract_dword(value, 7, 1);
-		reg->SPI_SYNC_SS = extract_dword(value, 8, 1);
-		reg->OSFH = extract_dword(value, 9, 1);
-		reg->SPI_ASYNC_SS = extract_dword(value, 10, 1);
-		reg->ASE_BWP = extract_dword(value, 11, 1);
-	}
-	return ret;
+	if (ret != 0)
+		return ret;
+
+	reg->BIOSWE = extract_bits_shifted(u32, value, 0, 1);
+	reg->BLE = extract_bits_shifted(u32, value, 1, 1);
+	reg->SRC = extract_bits_shifted(u32, value, 2, 2);
+	reg->TSS = extract_bits_shifted(u32, value, 4, 1);
+	reg->SMM_BWP = extract_bits_shifted(u32, value, 5, 1);
+	reg->BBS = extract_bits_shifted(u32, value, 6, 1);
+	reg->BILD = extract_bits_shifted(u32, value, 7, 1);
+	reg->SPI_SYNC_SS = extract_bits_shifted(u32, value, 8, 1);
+	reg->OSFH = extract_bits_shifted(u32, value, 9, 1);
+	reg->SPI_ASYNC_SS = extract_bits_shifted(u32, value, 10, 1);
+	reg->ASE_BWP = extract_bits_shifted(u32, value, 11, 1);
+
+	return 0;
 }
 
 static int read_BC_cpu_atom_avn(struct BC_cpu_atom_avn *reg,
@@ -159,18 +145,20 @@ static int read_BC_cpu_atom_avn(struct BC_cpu_atom_avn *reg,
 	u64 barOffset;
 
 	ret = read_SPIBAR(pch_arch, cpu_arch, &barOffset);
-	if (ret == 0) {
-		ret = mmio_read_byte(barOffset + 0xfc, &value);
+	if (ret != 0)
+		return ret;
 
-		if (ret == 0) {
-			reg->BIOSWE = extract_byte(value, 0, 1);
-			reg->BLE = extract_byte(value, 1, 1);
-			reg->SRC = extract_byte(value, 2, 2);
-			reg->TSS = extract_byte(value, 4, 1);
-			reg->SMM_BWP = extract_byte(value, 5, 1);
-		}
-	}
-	return ret;
+	ret = mmio_read_byte(barOffset + 0xfc, &value);
+	if (ret != 0)
+		return ret;
+
+	reg->BIOSWE = extract_bits_shifted(u8, value, 0, 1);
+	reg->BLE = extract_bits_shifted(u8, value, 1, 1);
+	reg->SRC = extract_bits_shifted(u8, value, 2, 2);
+	reg->TSS = extract_bits_shifted(u8, value, 4, 1);
+	reg->SMM_BWP = extract_bits_shifted(u8, value, 5, 1);
+
+	return 0;
 }
 
 static int read_BC_cpu_atom_byt(struct BC_cpu_atom_byt *reg,
@@ -181,17 +169,19 @@ static int read_BC_cpu_atom_byt(struct BC_cpu_atom_byt *reg,
 	u64 barOffset;
 
 	ret = read_SPIBAR(pch_arch, cpu_arch, &barOffset);
-	if (ret == 0) {
-		ret = mmio_read_dword(barOffset + 0xfc, &value);
+	if (ret != 0)
+		return ret;
 
-		if (ret == 0) {
-			reg->BIOSWE = extract_dword(value, 0, 1);
-			reg->BLE = extract_dword(value, 1, 1);
-			reg->SRC = extract_dword(value, 2, 2);
-			reg->SMM_BWP = extract_dword(value, 5, 1);
-		}
-	}
-	return ret;
+	ret = mmio_read_dword(barOffset + 0xfc, &value);
+	if (ret != 0)
+		return ret;
+
+	reg->BIOSWE = extract_bits_shifted(u32, value, 0, 1);
+	reg->BLE = extract_bits_shifted(u32, value, 1, 1);
+	reg->SRC = extract_bits_shifted(u32, value, 2, 2);
+	reg->SMM_BWP = extract_bits_shifted(u32, value, 5, 1);
+
+	return 0;
 }
 
 int read_BC(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch, struct BC *reg)
@@ -250,7 +240,6 @@ int read_SPIBAR(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch, u64 *offset)
 	int ret = 0;
 	u64 field_offset;
 
-	(void)pch_arch;
 	switch (cpu_arch) {
 	case cpu_avn:
 	case cpu_byt: {
@@ -271,7 +260,6 @@ int read_SPIBAR(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch, u64 *offset)
 int read_BC_BIOSWE(const struct BC *reg, u64 *value)
 {
 	int ret = 0;
-	*value = 0; /* This is to turn off false positive warning */
 
 	switch (reg->register_arch.source) {
 	case RegSource_PCH:
@@ -291,6 +279,7 @@ int read_BC_BIOSWE(const struct BC *reg, u64 *value)
 		default:
 			/* requested PCH arch hasn't field BIOSWE */
 			ret = -1;
+			*value = 0;
 		}
 		break;
 	case RegSource_CPU:
@@ -343,10 +332,12 @@ int read_BC_BIOSWE(const struct BC *reg, u64 *value)
 		default:
 			/* requested CPU arch hasn't field BIOSWE */
 			ret = -1;
+			*value = 0;
 		}
 		break;
 	default:
 		ret = -1; /* should not reach here, it's a bug */
+		*value = 0;
 	}
 	return ret;
 }
@@ -354,7 +345,6 @@ int read_BC_BIOSWE(const struct BC *reg, u64 *value)
 int read_BC_BLE(const struct BC *reg, u64 *value)
 {
 	int ret = 0;
-	*value = 0; /* This is to turn off false positive warning */
 
 	switch (reg->register_arch.source) {
 	case RegSource_PCH:
@@ -374,6 +364,7 @@ int read_BC_BLE(const struct BC *reg, u64 *value)
 		default:
 			/* requested PCH arch hasn't field BLE */
 			ret = -1;
+			*value = 0;
 		}
 		break;
 	case RegSource_CPU:
@@ -426,10 +417,12 @@ int read_BC_BLE(const struct BC *reg, u64 *value)
 		default:
 			/* requested CPU arch hasn't field BLE */
 			ret = -1;
+			*value = 0;
 		}
 		break;
 	default:
 		ret = -1; /* should not reach here, it's a bug */
+		*value = 0;
 	}
 	return ret;
 }
@@ -437,7 +430,6 @@ int read_BC_BLE(const struct BC *reg, u64 *value)
 int read_BC_SMM_BWP(const struct BC *reg, u64 *value)
 {
 	int ret = 0;
-	*value = 0; /* This is to turn off false positive warning */
 
 	switch (reg->register_arch.source) {
 	case RegSource_PCH:
@@ -457,6 +449,7 @@ int read_BC_SMM_BWP(const struct BC *reg, u64 *value)
 		default:
 			/* requested PCH arch hasn't field SMM_BWP */
 			ret = -1;
+			*value = 0;
 		}
 		break;
 	case RegSource_CPU:
@@ -509,10 +502,12 @@ int read_BC_SMM_BWP(const struct BC *reg, u64 *value)
 		default:
 			/* requested CPU arch hasn't field SMM_BWP */
 			ret = -1;
+			*value = 0;
 		}
 		break;
 	default:
 		ret = -1; /* should not reach here, it's a bug */
+		*value = 0;
 	}
 	return ret;
 }
@@ -520,11 +515,11 @@ int read_BC_SMM_BWP(const struct BC *reg, u64 *value)
 int read_SBASE_Base(const struct SBASE *reg, u64 *value)
 {
 	int ret = 0;
-	*value = 0; /* This is to turn off false positive warning */
 
 	switch (reg->register_arch.source) {
 	case RegSource_PCH:
 		ret = -1; /* no PCH archs have this field */
+		*value = 0;
 		break;
 	case RegSource_CPU:
 		switch (reg->register_arch.cpu_arch) {
@@ -537,10 +532,12 @@ int read_SBASE_Base(const struct SBASE *reg, u64 *value)
 		default:
 			/* requested CPU arch hasn't field Base */
 			ret = -1;
+			*value = 0;
 		}
 		break;
 	default:
 		ret = -1; /* should not reach here, it's a bug */
+		*value = 0;
 	}
 	return ret;
 }
