@@ -33,6 +33,8 @@
 enum PCH_Arch pch_arch;
 enum CPU_Arch cpu_arch;
 
+typedef int Read_BC_Flag_Fn(struct BC *bc, u64 *value);
+
 static int get_pci_vid_did(u8 bus, u8 dev, u8 fun, u16 *vid, u16 *did)
 {
 	u32 vid_did;
@@ -90,23 +92,28 @@ struct dentry *spi_smm_bwp;
 */
 #define BUFFER_SIZE 3
 
-static ssize_t bioswe_read(struct file *filp, char __user *buf, size_t count,
-			   loff_t *ppos)
+static ssize_t bc_flag_read(struct file *filp, char __user *buf, size_t count,
+			    loff_t *ppos)
 {
 	if (*ppos < BUFFER_SIZE) {
 		char tmp[BUFFER_SIZE];
 		ssize_t ret;
-		u64 bioswe = 0;
+		u64 value = 0;
 		struct BC bc;
 
+		if (file_inode(filp)->i_private == NULL)
+			return -1;
+
 		ret = read_BC(pch_arch, cpu_arch, &bc);
+
 		if (ret == 0)
-			ret = read_BC_BIOSWE(&bc, &bioswe);
+			ret = ((Read_BC_Flag_Fn *)file_inode(filp)->i_private)(
+				&bc, &value);
 
 		if (ret != 0)
 			return ret;
-		pr_debug("BIOSWE: %lld\n", bioswe);
-		sprintf(tmp, "%d\n", (int)bioswe & 1);
+
+		sprintf(tmp, "%d\n", (int)value & 1);
 		ret = simple_read_from_buffer(buf, count, ppos, tmp,
 					      sizeof(tmp));
 
@@ -116,70 +123,8 @@ static ssize_t bioswe_read(struct file *filp, char __user *buf, size_t count,
 	}
 }
 
-static const struct file_operations spi_bioswe_ops = {
-	.read = bioswe_read,
-};
-
-static ssize_t ble_read(struct file *filp, char __user *buf, size_t count,
-			loff_t *ppos)
-{
-	if (*ppos < BUFFER_SIZE) {
-		char tmp[BUFFER_SIZE];
-		u64 ble = 0;
-		ssize_t ret;
-		struct BC bc;
-
-		ret = read_BC(pch_arch, cpu_arch, &bc);
-		if (ret == 0)
-			ret = read_BC_BLE(&bc, &ble);
-
-		if (ret != 0)
-			return ret;
-
-		pr_debug("BLE: %lld\n", ble);
-		sprintf(tmp, "%d\n", (int)ble & 1);
-		ret = simple_read_from_buffer(buf, count, ppos, tmp,
-					      sizeof(tmp));
-
-		return ret;
-	} else {
-		return 0;
-	}
-}
-
-static const struct file_operations spi_ble_ops = {
-	.read = ble_read,
-};
-
-static ssize_t smm_bwp_read(struct file *filp, char __user *buf, size_t count,
-			    loff_t *ppos)
-{
-	if (*ppos < BUFFER_SIZE) {
-		char tmp[BUFFER_SIZE];
-		u64 smm_bwp = 0;
-		ssize_t ret;
-		struct BC bc;
-
-		ret = read_BC(pch_arch, cpu_arch, &bc);
-		if (ret == 0)
-			ret = read_BC_SMM_BWP(&bc, &smm_bwp);
-
-		if (ret != 0)
-			return ret;
-
-		pr_debug("SMM_BWP: %lld\n", smm_bwp);
-		sprintf(tmp, "%d\n", (int)smm_bwp & 1);
-		ret = simple_read_from_buffer(buf, count, ppos, tmp,
-					      sizeof(tmp));
-
-		return ret;
-	} else {
-		return 0;
-	}
-}
-
-static const struct file_operations spi_smm_bwp_ops = {
-	.read = smm_bwp_read,
+static const struct file_operations bc_flags_ops = {
+	.read = bc_flag_read,
 };
 
 static int __init mod_init(void)
@@ -197,31 +142,34 @@ static int __init mod_init(void)
 		pr_info("firmware securityfs dir creation successful\n");
 	}
 
-	spi_bioswe = securityfs_create_file("bioswe", 0600, spi_dir, NULL,
-					    &spi_bioswe_ops);
+	spi_bioswe = securityfs_create_file("bioswe", 0600, spi_dir,
+					    &read_BC_BIOSWE, &bc_flags_ops);
 	if (IS_ERR(spi_bioswe)) {
 		pr_err("Error creating sysfs file bioswe\n");
-		goto out;
+		goto out_bioswe;
 	}
 
-	spi_ble = securityfs_create_file("ble", 0600, spi_dir, NULL,
-					 &spi_ble_ops);
+	spi_ble = securityfs_create_file("ble", 0600, spi_dir, &read_BC_BLE,
+					 &bc_flags_ops);
 	if (IS_ERR(spi_ble)) {
 		pr_err("Error creating sysfs file ble\n");
-		goto out;
+		goto out_ble;
 	}
 
-	spi_smm_bwp = securityfs_create_file("smm_bwp", 0600, spi_dir, NULL,
-					     &spi_smm_bwp_ops);
+	spi_smm_bwp = securityfs_create_file("smm_bwp", 0600, spi_dir,
+					     &read_BC_SMM_BWP, &bc_flags_ops);
 	if (IS_ERR(spi_smm_bwp)) {
 		pr_err("Error creating sysfs file smm_bwp\n");
-		goto out;
+		goto out_smm_bwp;
 	}
 
 	return 0;
-out:
+
+out_smm_bwp:
 	securityfs_remove(spi_smm_bwp);
+out_ble:
 	securityfs_remove(spi_ble);
+out_bioswe:
 	securityfs_remove(spi_bioswe);
 	securityfs_remove(spi_dir);
 	return -1;
