@@ -95,32 +95,30 @@ struct dentry *spi_smm_bwp;
 static ssize_t bc_flag_read(struct file *filp, char __user *buf, size_t count,
 			    loff_t *ppos)
 {
-	if (*ppos < BUFFER_SIZE) {
-		char tmp[BUFFER_SIZE];
-		ssize_t ret;
-		u64 value = 0;
-		struct BC bc;
+	char tmp[BUFFER_SIZE];
+	ssize_t ret;
+	u64 value = 0;
+	struct BC bc;
 
-		if (file_inode(filp)->i_private == NULL)
-			return -1;
-
-		ret = read_BC(pch_arch, cpu_arch, &bc);
-
-		if (ret == 0)
-			ret = ((Read_BC_Flag_Fn *)file_inode(filp)->i_private)(
-				&bc, &value);
-
-		if (ret != 0)
-			return ret;
-
-		sprintf(tmp, "%d\n", (int)value & 1);
-		ret = simple_read_from_buffer(buf, count, ppos, tmp,
-					      sizeof(tmp));
-
-		return ret;
-	} else {
+	if (*ppos == BUFFER_SIZE)
 		return 0; // nothing else to read
-	}
+
+	if (file_inode(filp)->i_private == NULL)
+		return -1;
+
+	ret = read_BC(pch_arch, cpu_arch, &bc);
+
+	if (ret == 0)
+		ret = ((Read_BC_Flag_Fn *)file_inode(filp)->i_private)(&bc,
+								       &value);
+
+	if (ret != 0)
+		return ret;
+
+	sprintf(tmp, "%d\n", (int)value & 1);
+	ret = simple_read_from_buffer(buf, count, ppos, tmp, sizeof(tmp));
+
+	return ret;
 }
 
 static const struct file_operations bc_flags_ops = {
