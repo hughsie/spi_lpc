@@ -12,11 +12,14 @@
 #include "low_level_access.h"
 #include "data_access.h"
 
-#define extraction_mask(type, value, start, size)                              \
-	((((type)1u << (size)) - 1u) << (start))
+#define get_mask_from_bit_size(type, size)                                     \
+	(((type) ~((type)0)) >> (sizeof(type) * 8 - size))
+
+#define get_mask_from_bit_size_with_offset(type, size, offset)                 \
+	(get_mask_from_bit_size(type, size) << (offset))
 
 #define extract_bits(type, value, start, size)                                 \
-	((value)&extraction_mask(type, value, start, size))
+	((value)&get_mask_from_bit_size_with_offset(type, size, start))
 
 #define extract_bits_shifted(type, value, start, size)                         \
 	(extract_bits(type, value, start, size) >> (start))
