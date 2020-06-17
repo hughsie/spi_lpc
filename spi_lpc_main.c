@@ -12,7 +12,6 @@
 
 #include <linux/module.h>
 #include <linux/security.h>
-#include <linux/pci.h>
 #include "data_access.h"
 #include "low_level_access.h"
 
@@ -21,14 +20,10 @@
 #endif
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
-#define SIZE_BYTE sizeof(u8)
 #define SIZE_WORD sizeof(u16)
-#define SIZE_DWORD sizeof(u32)
-#define SIZE_QWORD sizeof(u64)
-#define BYTE_MASK 0xFFu
 #define WORD_MASK 0xFFFFu
-#define DWORD_MASK 0xFFFFFFFFu
-#define HIGH_DWORD_MASK (0xFFFFFFFFull << (SIZE_DWORD * 8u))
+#define LOW_WORD(x) ((x)&WORD_MASK)
+#define HIGH_WORD(x) ((x) >> ((SIZE_WORD * 8)) & WORD_MASK)
 
 enum PCH_Arch pch_arch;
 enum CPU_Arch cpu_arch;
@@ -40,8 +35,8 @@ static int get_pci_vid_did(u8 bus, u8 dev, u8 fun, u16 *vid, u16 *did)
 	u32 vid_did;
 	int ret = pci_read_dword(&vid_did, bus, dev, fun, 0);
 	if (ret == 0) {
-		*vid = vid_did & WORD_MASK;
-		*did = (vid_did >> (SIZE_WORD * 8)) & WORD_MASK;
+		*vid = LOW_WORD(vid_did);
+		*did = HIGH_WORD(vid_did);
 	}
 	return ret;
 }
