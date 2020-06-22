@@ -8,8 +8,8 @@
  * License version 2. This program is licensed "as is" without any
  * warranty of any kind, whether express or implied.
  */
-#ifndef DATA_ACCESS_H
-#define DATA_ACCESS_H
+#ifndef BIOS_DATA_ACCESS_H
+#define BIOS_DATA_ACCESS_H
 #include <linux/types.h>
 
 enum PCH_Arch {
@@ -182,4 +182,4 @@ int read_BC_SMM_BWP(const struct BC *reg, u64 *value);
 int read_SBASE_Base(const struct SBASE *reg, u64 *value);
 int viddid2pch_arch(u64 vid, u64 did, enum PCH_Arch *arch);
 int viddid2cpu_arch(u64 vid, u64 did, enum CPU_Arch *arch);
-#endif /* DATA_ACCESS_H */
+#endif /* BIOS_DATA_ACCESS_H */
