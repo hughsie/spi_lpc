@@ -65,7 +65,7 @@ static int get_cpu_arch(enum CPU_Arch *cpu_arch)
 	if (ret != 0)
 		return ret;
 
-	pr_info("CPU VID: %x - DID: %x\n", cpu_vid, cpu_did);
+	pr_debug("CPU VID: %x - DID: %x\n", cpu_vid, cpu_did);
 	ret = viddid2cpu_arch(cpu_vid, cpu_did, cpu_arch);
 
 	return ret;
