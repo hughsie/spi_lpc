@@ -10,7 +10,7 @@
  */
 #include <linux/module.h>
 #include "low_level_access.h"
-#include "data_access.h"
+#include "bios_data_access.h"
 
 #define get_mask_from_bit_size(type, size)                                     \
 	(((type) ~((type)0)) >> (sizeof(type) * 8 - size))
@@ -53,7 +53,7 @@ int read_SBASE(enum PCH_Arch pch_arch __maybe_unused, enum CPU_Arch cpu_arch,
 		ret = read_SBASE_atom_avn_byt(&reg->cpu_byt);
 		break;
 	default:
-		ret = -1;
+		ret = -EIO;
 	}
 	return ret;
 }
@@ -232,7 +232,7 @@ int read_BC(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch, struct BC *reg)
 						   cpu_arch);
 			break;
 		default:
-			ret = -1;
+			ret = -EIO;
 		}
 	}
 	return ret;
@@ -254,7 +254,7 @@ int read_SPIBAR(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch, u64 *offset)
 		}
 	} break;
 	default:
-		ret = -1;
+		ret = -EIO;
 	}
 
 	return ret;
@@ -281,7 +281,7 @@ int read_BC_BIOSWE(const struct BC *reg, u64 *value)
 			break;
 		default:
 			/* requested PCH arch hasn't field BIOSWE */
-			ret = -1;
+			ret = -EIO;
 			*value = 0;
 		}
 		break;
@@ -334,12 +334,12 @@ int read_BC_BIOSWE(const struct BC *reg, u64 *value)
 			break;
 		default:
 			/* requested CPU arch hasn't field BIOSWE */
-			ret = -1;
+			ret = -EIO;
 			*value = 0;
 		}
 		break;
 	default:
-		ret = -1; /* should not reach here, it's a bug */
+		ret = -EIO; /* should not reach here, it's a bug */
 		*value = 0;
 	}
 	return ret;
@@ -366,7 +366,7 @@ int read_BC_BLE(const struct BC *reg, u64 *value)
 			break;
 		default:
 			/* requested PCH arch hasn't field BLE */
-			ret = -1;
+			ret = -EIO;
 			*value = 0;
 		}
 		break;
@@ -419,12 +419,12 @@ int read_BC_BLE(const struct BC *reg, u64 *value)
 			break;
 		default:
 			/* requested CPU arch hasn't field BLE */
-			ret = -1;
+			ret = -EIO;
 			*value = 0;
 		}
 		break;
 	default:
-		ret = -1; /* should not reach here, it's a bug */
+		ret = -EIO; /* should not reach here, it's a bug */
 		*value = 0;
 	}
 	return ret;
@@ -451,7 +451,7 @@ int read_BC_SMM_BWP(const struct BC *reg, u64 *value)
 			break;
 		default:
 			/* requested PCH arch hasn't field SMM_BWP */
-			ret = -1;
+			ret = -EIO;
 			*value = 0;
 		}
 		break;
@@ -504,12 +504,12 @@ int read_BC_SMM_BWP(const struct BC *reg, u64 *value)
 			break;
 		default:
 			/* requested CPU arch hasn't field SMM_BWP */
-			ret = -1;
+			ret = -EIO;
 			*value = 0;
 		}
 		break;
 	default:
-		ret = -1; /* should not reach here, it's a bug */
+		ret = -EIO; /* should not reach here, it's a bug */
 		*value = 0;
 	}
 	return ret;
@@ -521,7 +521,7 @@ int read_SBASE_Base(const struct SBASE *reg, u64 *value)
 
 	switch (reg->register_arch.source) {
 	case RegSource_PCH:
-		ret = -1; /* no PCH archs have this field */
+		ret = -EIO; /* no PCH archs have this field */
 		*value = 0;
 		break;
 	case RegSource_CPU:
@@ -534,12 +534,12 @@ int read_SBASE_Base(const struct SBASE *reg, u64 *value)
 			break;
 		default:
 			/* requested CPU arch hasn't field Base */
-			ret = -1;
+			ret = -EIO;
 			*value = 0;
 		}
 		break;
 	default:
-		ret = -1; /* should not reach here, it's a bug */
+		ret = -EIO; /* should not reach here, it's a bug */
 		*value = 0;
 	}
 	return ret;
@@ -918,16 +918,16 @@ int viddid2pch_arch(u64 vid, u64 did, enum PCH_Arch *arch)
 			return 0;
 		default:
 			*arch = pch_none;
-			return -1; /* DID not found */
+			return -EIO; /* DID not found */
 		}
 	case 0x1022: /* AMD */
 		switch (did) {
 		default:
 			*arch = pch_none;
-			return -1; /* DID not found */
+			return -EIO; /* DID not found */
 		}
 	default:
-		return -1; /* VID not supported */
+		return -EIO; /* VID not supported */
 	}
 }
 
@@ -1075,7 +1075,7 @@ int viddid2cpu_arch(u64 vid, u64 did, enum CPU_Arch *arch)
 			return 0;
 		default:
 			*arch = cpu_none;
-			return -1; /* DID not found */
+			return -EIO; /* DID not found */
 		}
 	case 0x1022: /* AMD */
 		switch (did) {
@@ -1093,9 +1093,9 @@ int viddid2cpu_arch(u64 vid, u64 did, enum CPU_Arch *arch)
 			return 0;
 		default:
 			*arch = cpu_none;
-			return -1; /* DID not found */
+			return -EIO; /* DID not found */
 		}
 	default:
-		return -1; /* VID not supported */
+		return -EIO; /* VID not supported */
 	}
 }

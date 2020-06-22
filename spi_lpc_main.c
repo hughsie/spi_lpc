@@ -10,23 +10,25 @@
  * warranty of any kind, whether express or implied.
  */
 
+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+
 #include <linux/module.h>
 #include <linux/security.h>
-#include "data_access.h"
+#include "bios_data_access.h"
 #include "low_level_access.h"
-
-#ifdef pr_fmt
-#undef pr_fmt
-#endif
-#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #define SIZE_WORD sizeof(u16)
 #define WORD_MASK 0xFFFFu
 #define LOW_WORD(x) ((x)&WORD_MASK)
 #define HIGH_WORD(x) ((x) >> ((SIZE_WORD * 8)) & WORD_MASK)
 
-enum PCH_Arch pch_arch;
-enum CPU_Arch cpu_arch;
+static enum PCH_Arch pch_arch;
+static enum CPU_Arch cpu_arch;
+
+static struct dentry *spi_dir;
+static struct dentry *spi_bioswe;
+static struct dentry *spi_ble;
+static struct dentry *spi_smm_bwp;
 
 typedef int Read_BC_Flag_Fn(struct BC *bc, u64 *value);
 
@@ -49,7 +51,7 @@ static int get_pch_arch(enum PCH_Arch *pch_arch)
 	if (ret != 0)
 		return ret;
 
-	pr_info("PCH VID: %x - DID: %x\n", pch_vid, pch_did);
+	pr_debug("PCH VID: %x - DID: %x\n", pch_vid, pch_did);
 	ret = viddid2pch_arch(pch_vid, pch_did, pch_arch);
 
 	return ret;
@@ -74,17 +76,12 @@ static int get_pch_cpu(enum PCH_Arch *pch_arch, enum CPU_Arch *cpu_arch)
 	const int cpu_res = get_cpu_arch(cpu_arch);
 	const int pch_res = get_pch_arch(pch_arch);
 
-	return cpu_res != 0 && pch_res != 0 ? -1 : 0;
+	return cpu_res != 0 && pch_res != 0 ? -EIO : 0;
 }
 
-struct dentry *spi_dir;
-struct dentry *spi_bioswe;
-struct dentry *spi_ble;
-struct dentry *spi_smm_bwp;
-
 /* Buffer to return: always 3 because of the following chars:
-       value \n \0
-*/
+ *     value \n \0
+ */
 #define BUFFER_SIZE 3
 
 static ssize_t bc_flag_read(struct file *filp, char __user *buf, size_t count,
@@ -96,10 +93,10 @@ static ssize_t bc_flag_read(struct file *filp, char __user *buf, size_t count,
 	struct BC bc;
 
 	if (*ppos == BUFFER_SIZE)
-		return 0; // nothing else to read
+		return 0; /* nothing else to read */
 
 	if (file_inode(filp)->i_private == NULL)
-		return -1;
+		return -EIO;
 
 	ret = read_BC(pch_arch, cpu_arch, &bc);
 
@@ -122,39 +119,32 @@ static const struct file_operations bc_flags_ops = {
 
 static int __init mod_init(void)
 {
+	int ret = 0;
 	if (get_pch_cpu(&pch_arch, &cpu_arch) != 0) {
 		pr_err("Couldn't detect PCH or CPU\n");
-		return -1;
+		return -EIO;
 	}
 
 	spi_dir = securityfs_create_dir("firmware", NULL);
 	if (IS_ERR(spi_dir)) {
-		pr_err("Couldn't create firmware sysfs dir\n");
-		return -1;
-	} else {
-		pr_info("firmware securityfs dir creation successful\n");
+		pr_err("Couldn't create firmware securityfs dir\n");
+		return PTR_ERR(spi_dir);
 	}
 
-	spi_bioswe = securityfs_create_file("bioswe", 0600, spi_dir,
-					    &read_BC_BIOSWE, &bc_flags_ops);
-	if (IS_ERR(spi_bioswe)) {
-		pr_err("Error creating sysfs file bioswe\n");
-		goto out_bioswe;
-	}
+#define create_file(name, function)                                            \
+	do {                                                                   \
+		spi_##name = securityfs_create_file(#name, 0600, spi_dir,      \
+						    &function, &bc_flags_ops); \
+		if (IS_ERR(spi_##name)) {                                      \
+			pr_err("Error creating securityfs file " #name "\n");  \
+			ret = PTR_ERR(spi_##name);                             \
+			goto out_##name;                                       \
+		}                                                              \
+	} while (0)
 
-	spi_ble = securityfs_create_file("ble", 0600, spi_dir, &read_BC_BLE,
-					 &bc_flags_ops);
-	if (IS_ERR(spi_ble)) {
-		pr_err("Error creating sysfs file ble\n");
-		goto out_ble;
-	}
-
-	spi_smm_bwp = securityfs_create_file("smm_bwp", 0600, spi_dir,
-					     &read_BC_SMM_BWP, &bc_flags_ops);
-	if (IS_ERR(spi_smm_bwp)) {
-		pr_err("Error creating sysfs file smm_bwp\n");
-		goto out_smm_bwp;
-	}
+	create_file(bioswe, read_BC_BIOSWE);
+	create_file(ble, read_BC_BLE);
+	create_file(smm_bwp, read_BC_SMM_BWP);
 
 	return 0;
 
@@ -165,7 +155,7 @@ out_ble:
 out_bioswe:
 	securityfs_remove(spi_bioswe);
 	securityfs_remove(spi_dir);
-	return -1;
+	return ret;
 }
 
 static void __exit mod_exit(void)
