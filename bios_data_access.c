@@ -238,23 +238,347 @@ int read_BC(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch, struct BC *reg)
 	return ret;
 }
 
+static int read_HSFS_pch_495_cpu_apl_glk(struct HSFS_pch_495_cpu_apl_glk *reg,
+					 enum PCH_Arch pch_arch,
+					 enum CPU_Arch cpu_arch)
+{
+	u16 value;
+	int ret;
+	u64 barOffset;
+
+	ret = read_SPIBAR(pch_arch, cpu_arch, &barOffset);
+	if (ret != 0)
+		return ret;
+
+	ret = mmio_read_word(barOffset + 0x4, &value);
+	if (ret != 0)
+		return ret;
+
+	reg->FDONE = extract_bits_shifted(u16, value, 0, 1);
+	reg->FCERR = extract_bits_shifted(u16, value, 1, 1);
+	reg->AEL = extract_bits_shifted(u16, value, 2, 1);
+	reg->SAF_ERROR = extract_bits_shifted(u16, value, 3, 1);
+	reg->SAF_DLE = extract_bits_shifted(u16, value, 4, 1);
+	reg->SCIP = extract_bits_shifted(u16, value, 5, 1);
+	reg->SAF_LE = extract_bits_shifted(u16, value, 6, 1);
+	reg->SAF_MODE_ACTIVE = extract_bits_shifted(u16, value, 7, 1);
+	reg->SAF_CE = extract_bits_shifted(u16, value, 8, 1);
+	reg->WRSDIS = extract_bits_shifted(u16, value, 11, 1);
+	reg->PR34LKD = extract_bits_shifted(u16, value, 12, 1);
+	reg->FDOPSS = extract_bits_shifted(u16, value, 13, 1);
+	reg->FDV = extract_bits_shifted(u16, value, 14, 1);
+	reg->FLOCKDN = extract_bits_shifted(u16, value, 15, 1);
+
+	return 0;
+}
+
+static int read_HSFS_pch_c620(struct HSFS_pch_c620 *reg, enum PCH_Arch pch_arch,
+			      enum CPU_Arch cpu_arch)
+{
+	u16 value;
+	int ret;
+	u64 barOffset;
+
+	ret = read_SPIBAR(pch_arch, cpu_arch, &barOffset);
+	if (ret != 0)
+		return ret;
+
+	ret = mmio_read_word(barOffset + 0x4, &value);
+	if (ret != 0)
+		return ret;
+
+	reg->FDONE = extract_bits_shifted(u16, value, 0, 1);
+	reg->FCERR = extract_bits_shifted(u16, value, 1, 1);
+	reg->AEL = extract_bits_shifted(u16, value, 2, 1);
+	reg->SAF_ERROR = extract_bits_shifted(u16, value, 3, 1);
+	reg->SAF_DLE = extract_bits_shifted(u16, value, 4, 1);
+	reg->SCIP = extract_bits_shifted(u16, value, 5, 1);
+	reg->WRSDIS = extract_bits_shifted(u16, value, 11, 1);
+	reg->PR34LKD = extract_bits_shifted(u16, value, 12, 1);
+	reg->FDOPSS = extract_bits_shifted(u16, value, 13, 1);
+	reg->FDV = extract_bits_shifted(u16, value, 14, 1);
+	reg->FLOCKDN = extract_bits_shifted(u16, value, 15, 1);
+
+	return 0;
+}
+
+static int read_HSFS_pch_1xx_2xx_3xx_4xx_5xx_6_7_8_mobile(
+	struct HSFS_pch_1xx_2xx_3xx_4xx_5xx_6_7_8_mobile *reg,
+	enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch)
+{
+	u16 value;
+	int ret;
+	u64 barOffset;
+
+	ret = read_SPIBAR(pch_arch, cpu_arch, &barOffset);
+	if (ret != 0)
+		return ret;
+
+	ret = mmio_read_word(barOffset + 0x4, &value);
+	if (ret != 0)
+		return ret;
+
+	reg->FDONE = extract_bits_shifted(u16, value, 0, 1);
+	reg->FCERR = extract_bits_shifted(u16, value, 1, 1);
+	reg->AEL = extract_bits_shifted(u16, value, 2, 1);
+	reg->SCIP = extract_bits_shifted(u16, value, 5, 1);
+	reg->WRSDIS = extract_bits_shifted(u16, value, 11, 1);
+	reg->PR34LKD = extract_bits_shifted(u16, value, 12, 1);
+	reg->FDOPSS = extract_bits_shifted(u16, value, 13, 1);
+	reg->FDV = extract_bits_shifted(u16, value, 14, 1);
+	reg->FLOCKDN = extract_bits_shifted(u16, value, 15, 1);
+
+	return 0;
+}
+
+static int read_HSFS_cpu_snb_jkt_ivb_ivt_bdx_hsx_avn_byt(
+	struct HSFS_cpu_snb_jkt_ivb_ivt_bdx_hsx_avn_byt *reg,
+	enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch)
+{
+	u16 value;
+	int ret;
+	u64 barOffset;
+
+	ret = read_SPIBAR(pch_arch, cpu_arch, &barOffset);
+	if (ret != 0)
+		return ret;
+
+	ret = mmio_read_word(barOffset + 0x4, &value);
+	if (ret != 0)
+		return ret;
+
+	reg->FDONE = extract_bits_shifted(u16, value, 0, 1);
+	reg->FCERR = extract_bits_shifted(u16, value, 1, 1);
+	reg->AEL = extract_bits_shifted(u16, value, 2, 1);
+	reg->BERASE = extract_bits_shifted(u16, value, 3, 2);
+	reg->SCIP = extract_bits_shifted(u16, value, 5, 1);
+	reg->FDOPSS = extract_bits_shifted(u16, value, 13, 1);
+	reg->FDV = extract_bits_shifted(u16, value, 14, 1);
+	reg->FLOCKDN = extract_bits_shifted(u16, value, 15, 1);
+
+	return 0;
+}
+
+int read_HSFS(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch, struct HSFS *reg)
+{
+	int ret = 0;
+	reg->register_arch.source = RegSource_PCH;
+	reg->register_arch.pch_arch = pch_arch;
+	switch (pch_arch) {
+	case pch_495:
+		ret = read_HSFS_pch_495_cpu_apl_glk(&reg->pch_495, pch_arch,
+						    cpu_arch);
+		break;
+	case pch_c620:
+		ret = read_HSFS_pch_c620(&reg->pch_c620, pch_arch, cpu_arch);
+		break;
+	case pch_1xx:
+	case pch_2xx:
+	case pch_3xx:
+	case pch_4xx:
+	case pch_5xx:
+	case pch_6_mobile:
+	case pch_7_8_mobile:
+		ret = read_HSFS_pch_1xx_2xx_3xx_4xx_5xx_6_7_8_mobile(
+			&reg->pch_7_8_mobile, pch_arch, cpu_arch);
+		break;
+	default:
+		reg->register_arch.source = RegSource_CPU;
+		reg->register_arch.cpu_arch = cpu_arch;
+		switch (cpu_arch) {
+		case cpu_apl:
+		case cpu_glk:
+			ret = read_HSFS_pch_495_cpu_apl_glk(&reg->cpu_glk,
+							    pch_arch, cpu_arch);
+			break;
+		case cpu_snb:
+		case cpu_jkt:
+		case cpu_ivb:
+		case cpu_ivt:
+		case cpu_bdw:
+		case cpu_bdx:
+		case cpu_hsw:
+		case cpu_hsx:
+		case cpu_avn:
+		case cpu_byt:
+			ret = read_HSFS_cpu_snb_jkt_ivb_ivt_bdx_hsx_avn_byt(
+				&reg->cpu_byt, pch_arch, cpu_arch);
+			break;
+		default:
+			ret = -EIO;
+		}
+	}
+	return ret;
+}
+
+static int read_RCBA_cpu_snb_jkt_ivb_ivt_bdx_hsx(
+	struct RCBA_cpu_snb_jkt_ivb_ivt_bdx_hsx *reg)
+{
+	u32 value;
+	const int ret = pci_read_dword(&value, 0x0, 0x1f, 0x0, 0xf0);
+
+	if (ret != 0)
+		return ret;
+
+	reg->Enable = extract_bits_shifted(u32, value, 0, 1);
+	reg->Base = extract_bits(u32, value, 14, 18);
+
+	return 0;
+}
+
+int read_RCBA(enum PCH_Arch pch_arch __maybe_unused, enum CPU_Arch cpu_arch,
+	      struct RCBA *reg)
+{
+	int ret = 0;
+	reg->register_arch.source = RegSource_CPU;
+	reg->register_arch.cpu_arch = cpu_arch;
+	switch (cpu_arch) {
+	case cpu_snb:
+	case cpu_jkt:
+	case cpu_ivb:
+	case cpu_ivt:
+	case cpu_bdw:
+	case cpu_bdx:
+	case cpu_hsw:
+	case cpu_hsx:
+		ret = read_RCBA_cpu_snb_jkt_ivb_ivt_bdx_hsx(&reg->cpu_hsx);
+		break;
+	default:
+		ret = -EIO;
+	}
+	return ret;
+}
+
+static int read_BIOS_SPI_BAR0_cpu_apl_glk(struct BIOS_SPI_BAR0_cpu_apl_glk *reg)
+{
+	u32 value;
+	const int ret = pci_read_dword(&value, 0x0, 0xd, 0x2, 0x10);
+
+	if (ret != 0)
+		return ret;
+
+	reg->MEMSPACE = extract_bits_shifted(u32, value, 0, 1);
+	reg->TYP = extract_bits_shifted(u32, value, 1, 2);
+	reg->PREFETCH = extract_bits_shifted(u32, value, 3, 1);
+	reg->MEMSIZE = extract_bits_shifted(u32, value, 4, 8);
+	reg->MEMBAR = extract_bits(u32, value, 12, 20);
+
+	return 0;
+}
+
+static int read_BIOS_SPI_BAR0_pch_1xx_2xx_3xx_4xx_5xx_c620_6_7_8_mobile(
+	struct BIOS_SPI_BAR0_pch_1xx_2xx_3xx_4xx_5xx_c620_6_7_8_mobile *reg)
+{
+	u32 value;
+	const int ret = pci_read_dword(&value, 0x0, 0x1f, 0x5, 0x10);
+
+	if (ret != 0)
+		return ret;
+
+	reg->MEMSPACE = extract_bits_shifted(u32, value, 0, 1);
+	reg->TYP = extract_bits_shifted(u32, value, 1, 2);
+	reg->PREFETCH = extract_bits_shifted(u32, value, 3, 1);
+	reg->MEMSIZE = extract_bits_shifted(u32, value, 4, 8);
+	reg->MEMBAR = extract_bits(u32, value, 12, 20);
+
+	return 0;
+}
+
+int read_BIOS_SPI_BAR0(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch,
+		       struct BIOS_SPI_BAR0 *reg)
+{
+	int ret = 0;
+	reg->register_arch.source = RegSource_PCH;
+	reg->register_arch.pch_arch = pch_arch;
+	switch (pch_arch) {
+	case pch_1xx:
+	case pch_2xx:
+	case pch_3xx:
+	case pch_4xx:
+	case pch_495:
+	case pch_5xx:
+	case pch_c620:
+	case pch_6_mobile:
+	case pch_7_8_mobile:
+		ret = read_BIOS_SPI_BAR0_pch_1xx_2xx_3xx_4xx_5xx_c620_6_7_8_mobile(
+			&reg->pch_7_8_mobile);
+		break;
+	default:
+		reg->register_arch.source = RegSource_CPU;
+		reg->register_arch.cpu_arch = cpu_arch;
+		switch (cpu_arch) {
+		case cpu_apl:
+		case cpu_glk:
+			ret = read_BIOS_SPI_BAR0_cpu_apl_glk(&reg->cpu_glk);
+			break;
+		default:
+			ret = -EIO;
+		}
+	}
+	return ret;
+}
+
 int read_SPIBAR(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch, u64 *offset)
 {
 	int ret = 0;
 	u64 field_offset;
 
-	switch (cpu_arch) {
-	case cpu_avn:
-	case cpu_byt: {
-		struct SBASE reg;
-		ret = read_SBASE(pch_arch, cpu_arch, &reg);
+	switch (pch_arch) {
+	case pch_1xx:
+	case pch_2xx:
+	case pch_3xx:
+	case pch_4xx:
+	case pch_495:
+	case pch_5xx:
+	case pch_c620:
+	case pch_6_mobile:
+	case pch_7_8_mobile: {
+		struct BIOS_SPI_BAR0 reg;
+		ret = read_BIOS_SPI_BAR0(pch_arch, cpu_arch, &reg);
 		if (ret == 0) {
-			ret = read_SBASE_Base(&reg, &field_offset);
+			ret = read_BIOS_SPI_BAR0_MEMBAR(&reg, &field_offset);
 			*offset = field_offset + 0;
 		}
 	} break;
 	default:
-		ret = -EIO;
+		switch (cpu_arch) {
+		case cpu_avn:
+		case cpu_byt: {
+			struct SBASE reg;
+			ret = read_SBASE(pch_arch, cpu_arch, &reg);
+			if (ret == 0) {
+				ret = read_SBASE_Base(&reg, &field_offset);
+				*offset = field_offset + 0;
+			}
+		} break;
+		case cpu_apl:
+		case cpu_glk: {
+			struct BIOS_SPI_BAR0 reg;
+			ret = read_BIOS_SPI_BAR0(pch_arch, cpu_arch, &reg);
+			if (ret == 0) {
+				ret = read_BIOS_SPI_BAR0_MEMBAR(&reg,
+								&field_offset);
+				*offset = field_offset + 0;
+			}
+		} break;
+		case cpu_snb:
+		case cpu_jkt:
+		case cpu_ivb:
+		case cpu_ivt:
+		case cpu_bdw:
+		case cpu_bdx:
+		case cpu_hsw:
+		case cpu_hsx: {
+			struct RCBA reg;
+			ret = read_RCBA(pch_arch, cpu_arch, &reg);
+			if (ret == 0) {
+				ret = read_RCBA_Base(&reg, &field_offset);
+				*offset = field_offset + 14336;
+			}
+		} break;
+		default:
+			ret = -EIO;
+		}
 	}
 
 	return ret;
@@ -504,6 +828,206 @@ int read_BC_SMM_BWP(const struct BC *reg, u64 *value)
 			break;
 		default:
 			/* requested CPU arch hasn't field SMM_BWP */
+			ret = -EIO;
+			*value = 0;
+		}
+		break;
+	default:
+		ret = -EIO; /* should not reach here, it's a bug */
+		*value = 0;
+	}
+	return ret;
+}
+
+int read_BIOS_SPI_BAR0_MEMBAR(const struct BIOS_SPI_BAR0 *reg, u64 *value)
+{
+	int ret = 0;
+
+	switch (reg->register_arch.source) {
+	case RegSource_PCH:
+		switch (reg->register_arch.pch_arch) {
+		case pch_1xx:
+			*value = reg->pch_1xx.MEMBAR;
+			break;
+		case pch_2xx:
+			*value = reg->pch_2xx.MEMBAR;
+			break;
+		case pch_3xx:
+			*value = reg->pch_3xx.MEMBAR;
+			break;
+		case pch_4xx:
+			*value = reg->pch_4xx.MEMBAR;
+			break;
+		case pch_495:
+			*value = reg->pch_495.MEMBAR;
+			break;
+		case pch_5xx:
+			*value = reg->pch_5xx.MEMBAR;
+			break;
+		case pch_c620:
+			*value = reg->pch_c620.MEMBAR;
+			break;
+		case pch_6_mobile:
+			*value = reg->pch_6_mobile.MEMBAR;
+			break;
+		case pch_7_8_mobile:
+			*value = reg->pch_7_8_mobile.MEMBAR;
+			break;
+		default:
+			/* requested PCH arch hasn't field MEMBAR */
+			ret = -EIO;
+			*value = 0;
+		}
+		break;
+	case RegSource_CPU:
+		switch (reg->register_arch.cpu_arch) {
+		case cpu_apl:
+			*value = reg->cpu_apl.MEMBAR;
+			break;
+		case cpu_glk:
+			*value = reg->cpu_glk.MEMBAR;
+			break;
+		default:
+			/* requested CPU arch hasn't field MEMBAR */
+			ret = -EIO;
+			*value = 0;
+		}
+		break;
+	default:
+		ret = -EIO; /* should not reach here, it's a bug */
+		*value = 0;
+	}
+	return ret;
+}
+
+int read_HSFS_FLOCKDN(const struct HSFS *reg, u64 *value)
+{
+	int ret = 0;
+
+	switch (reg->register_arch.source) {
+	case RegSource_PCH:
+		switch (reg->register_arch.pch_arch) {
+		case pch_495:
+			*value = reg->pch_495.FLOCKDN;
+			break;
+		case pch_c620:
+			*value = reg->pch_c620.FLOCKDN;
+			break;
+		case pch_1xx:
+			*value = reg->pch_1xx.FLOCKDN;
+			break;
+		case pch_2xx:
+			*value = reg->pch_2xx.FLOCKDN;
+			break;
+		case pch_3xx:
+			*value = reg->pch_3xx.FLOCKDN;
+			break;
+		case pch_4xx:
+			*value = reg->pch_4xx.FLOCKDN;
+			break;
+		case pch_5xx:
+			*value = reg->pch_5xx.FLOCKDN;
+			break;
+		case pch_6_mobile:
+			*value = reg->pch_6_mobile.FLOCKDN;
+			break;
+		case pch_7_8_mobile:
+			*value = reg->pch_7_8_mobile.FLOCKDN;
+			break;
+		default:
+			/* requested PCH arch hasn't field FLOCKDN */
+			ret = -EIO;
+			*value = 0;
+		}
+		break;
+	case RegSource_CPU:
+		switch (reg->register_arch.cpu_arch) {
+		case cpu_apl:
+			*value = reg->cpu_apl.FLOCKDN;
+			break;
+		case cpu_glk:
+			*value = reg->cpu_glk.FLOCKDN;
+			break;
+		case cpu_snb:
+			*value = reg->cpu_snb.FLOCKDN;
+			break;
+		case cpu_jkt:
+			*value = reg->cpu_jkt.FLOCKDN;
+			break;
+		case cpu_ivb:
+			*value = reg->cpu_ivb.FLOCKDN;
+			break;
+		case cpu_ivt:
+			*value = reg->cpu_ivt.FLOCKDN;
+			break;
+		case cpu_bdw:
+			*value = reg->cpu_bdw.FLOCKDN;
+			break;
+		case cpu_bdx:
+			*value = reg->cpu_bdx.FLOCKDN;
+			break;
+		case cpu_hsw:
+			*value = reg->cpu_hsw.FLOCKDN;
+			break;
+		case cpu_hsx:
+			*value = reg->cpu_hsx.FLOCKDN;
+			break;
+		case cpu_avn:
+			*value = reg->cpu_avn.FLOCKDN;
+			break;
+		case cpu_byt:
+			*value = reg->cpu_byt.FLOCKDN;
+			break;
+		default:
+			/* requested CPU arch hasn't field FLOCKDN */
+			ret = -EIO;
+			*value = 0;
+		}
+		break;
+	default:
+		ret = -EIO; /* should not reach here, it's a bug */
+		*value = 0;
+	}
+	return ret;
+}
+
+int read_RCBA_Base(const struct RCBA *reg, u64 *value)
+{
+	int ret = 0;
+
+	switch (reg->register_arch.source) {
+	case RegSource_PCH:
+		ret = -EIO; /* no PCH archs have this field */
+		*value = 0;
+		break;
+	case RegSource_CPU:
+		switch (reg->register_arch.cpu_arch) {
+		case cpu_snb:
+			*value = reg->cpu_snb.Base;
+			break;
+		case cpu_jkt:
+			*value = reg->cpu_jkt.Base;
+			break;
+		case cpu_ivb:
+			*value = reg->cpu_ivb.Base;
+			break;
+		case cpu_ivt:
+			*value = reg->cpu_ivt.Base;
+			break;
+		case cpu_bdw:
+			*value = reg->cpu_bdw.Base;
+			break;
+		case cpu_bdx:
+			*value = reg->cpu_bdx.Base;
+			break;
+		case cpu_hsw:
+			*value = reg->cpu_hsw.Base;
+			break;
+		case cpu_hsx:
+			*value = reg->cpu_hsx.Base;
+			break;
+		default:
+			/* requested CPU arch hasn't field Base */
 			ret = -EIO;
 			*value = 0;
 		}

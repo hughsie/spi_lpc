@@ -29,8 +29,10 @@ static struct dentry *spi_dir;
 static struct dentry *spi_bioswe;
 static struct dentry *spi_ble;
 static struct dentry *spi_smm_bwp;
+static struct dentry *spi_flockdn;
 
 typedef int Read_BC_Flag_Fn(struct BC *bc, u64 *value);
+typedef int Read_HSFS_Flag_Fn(struct HSFS *hsfs, u64 *value);
 
 static int get_pci_vid_did(u8 bus, u8 dev, u8 fun, u16 *vid, u16 *did)
 {
@@ -117,6 +119,39 @@ static const struct file_operations bc_flags_ops = {
 	.read = bc_flag_read,
 };
 
+static ssize_t hsfs_flag_read(struct file *filp, char __user *buf, size_t count,
+			      loff_t *ppos)
+{
+	char tmp[BUFFER_SIZE];
+	ssize_t ret;
+	u64 value = 0;
+	struct HSFS hsfs;
+
+	if (*ppos == BUFFER_SIZE)
+		return 0; /* nothing else to read */
+
+	if (file_inode(filp)->i_private == NULL)
+		return -EIO;
+
+	ret = read_HSFS(pch_arch, cpu_arch, &hsfs);
+
+	if (ret == 0)
+		ret = ((Read_HSFS_Flag_Fn *)file_inode(filp)->i_private)(
+			&hsfs, &value);
+
+	if (ret != 0)
+		return ret;
+
+	sprintf(tmp, "%d\n", (int)value & 1);
+	ret = simple_read_from_buffer(buf, count, ppos, tmp, sizeof(tmp));
+
+	return ret;
+}
+
+static const struct file_operations hsfs_flags_ops = {
+	.read = hsfs_flag_read,
+};
+
 static int __init mod_init(void)
 {
 	int ret = 0;
@@ -131,10 +166,10 @@ static int __init mod_init(void)
 		return PTR_ERR(spi_dir);
 	}
 
-#define create_file(name, function)                                            \
+#define create_file(name, function, ops)                                       \
 	do {                                                                   \
 		spi_##name = securityfs_create_file(#name, 0600, spi_dir,      \
-						    &function, &bc_flags_ops); \
+						    &function, &ops);          \
 		if (IS_ERR(spi_##name)) {                                      \
 			pr_err("Error creating securityfs file " #name "\n");  \
 			ret = PTR_ERR(spi_##name);                             \
@@ -142,12 +177,15 @@ static int __init mod_init(void)
 		}                                                              \
 	} while (0)
 
-	create_file(bioswe, read_BC_BIOSWE);
-	create_file(ble, read_BC_BLE);
-	create_file(smm_bwp, read_BC_SMM_BWP);
+	create_file(bioswe, read_BC_BIOSWE, bc_flags_ops);
+	create_file(ble, read_BC_BLE, bc_flags_ops);
+	create_file(smm_bwp, read_BC_SMM_BWP, bc_flags_ops);
+	create_file(flockdn, read_HSFS_FLOCKDN, hsfs_flags_ops);
 
 	return 0;
 
+out_flockdn:
+	securityfs_remove(spi_flockdn);
 out_smm_bwp:
 	securityfs_remove(spi_smm_bwp);
 out_ble:
@@ -160,6 +198,7 @@ out_bioswe:
 
 static void __exit mod_exit(void)
 {
+	securityfs_remove(spi_flockdn);
 	securityfs_remove(spi_smm_bwp);
 	securityfs_remove(spi_ble);
 	securityfs_remove(spi_bioswe);
