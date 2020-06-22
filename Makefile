@@ -1,4 +1,4 @@
-spi_lpc-y := spi_lpc_main.o data_access.o low_level_access.o
+spi_lpc-y := spi_lpc_main.o bios_data_access.o low_level_access.o
 obj-m += spi_lpc.o
 
 all:
