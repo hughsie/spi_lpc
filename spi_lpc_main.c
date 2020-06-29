@@ -12,9 +12,7 @@
 #include <linux/security.h>
 #include "bios_data_access.h"
 #include "low_level_access.h"
-
-int viddid2pch_arch(u64 vid, u64 did, enum PCH_Arch *arch);
-int viddid2cpu_arch(u64 vid, u64 did, enum CPU_Arch *arch);
+#include "viddid_arch_map.h"
 
 #define SIZE_WORD sizeof(u16)
 #define WORD_MASK 0xFFFFu
