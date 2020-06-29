@@ -7,6 +7,7 @@
  */
 #ifndef BIOS_DATA_ACCESS_H
 #define BIOS_DATA_ACCESS_H
+
 #include <linux/types.h>
 
 enum PCH_Arch {
