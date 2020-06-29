@@ -4,9 +4,6 @@
  *
  * Copyright 2020 (c) Daniel Gutson (daniel.gutson@eclypsium.com)
  *
- * This file is licensed under  the terms of the GNU General Public
- * License version 2. This program is licensed "as is" without any
- * warranty of any kind, whether express or implied.
  */
 #include <linux/module.h>
 #include "low_level_access.h"
@@ -23,6 +20,11 @@
 
 #define extract_bits_shifted(type, value, start, size)                         \
 	(extract_bits(type, value, start, size) >> (start))
+
+static int read_SPIBAR(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch,
+		       u64 *offset);
+int viddid2pch_arch(u64 vid, u64 did, enum PCH_Arch *arch);
+int viddid2cpu_arch(u64 vid, u64 did, enum CPU_Arch *arch);
 
 static int read_SBASE_atom_avn_byt(struct SBASE_atom_avn_byt *reg)
 {
@@ -45,8 +47,10 @@ int read_SBASE(enum PCH_Arch pch_arch __maybe_unused, enum CPU_Arch cpu_arch,
 	       struct SBASE *reg)
 {
 	int ret = 0;
+
 	reg->register_arch.source = RegSource_CPU;
 	reg->register_arch.cpu_arch = cpu_arch;
+
 	switch (cpu_arch) {
 	case cpu_avn:
 	case cpu_byt:
@@ -57,6 +61,7 @@ int read_SBASE(enum PCH_Arch pch_arch __maybe_unused, enum CPU_Arch cpu_arch,
 	}
 	return ret;
 }
+EXPORT_SYMBOL_GPL(read_SBASE);
 
 static int read_BC_pch_3xx_4xx_5xx(struct BC_pch_3xx_4xx_5xx *reg)
 {
@@ -190,8 +195,10 @@ static int read_BC_cpu_atom_byt(struct BC_cpu_atom_byt *reg,
 int read_BC(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch, struct BC *reg)
 {
 	int ret = 0;
+
 	reg->register_arch.source = RegSource_PCH;
 	reg->register_arch.pch_arch = pch_arch;
+
 	switch (pch_arch) {
 	case pch_3xx:
 	case pch_4xx:
@@ -202,6 +209,7 @@ int read_BC(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch, struct BC *reg)
 	default:
 		reg->register_arch.source = RegSource_CPU;
 		reg->register_arch.cpu_arch = cpu_arch;
+
 		switch (cpu_arch) {
 		case cpu_snb:
 		case cpu_jkt:
@@ -237,6 +245,7 @@ int read_BC(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch, struct BC *reg)
 	}
 	return ret;
 }
+EXPORT_SYMBOL_GPL(read_BC);
 
 int read_SPIBAR(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch, u64 *offset)
 {
@@ -247,6 +256,7 @@ int read_SPIBAR(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch, u64 *offset)
 	case cpu_avn:
 	case cpu_byt: {
 		struct SBASE reg;
+
 		ret = read_SBASE(pch_arch, cpu_arch, &reg);
 		if (ret == 0) {
 			ret = read_SBASE_Base(&reg, &field_offset);
@@ -344,6 +354,7 @@ int read_BC_BIOSWE(const struct BC *reg, u64 *value)
 	}
 	return ret;
 }
+EXPORT_SYMBOL_GPL(read_BC_BIOSWE);
 
 int read_BC_BLE(const struct BC *reg, u64 *value)
 {
@@ -429,6 +440,7 @@ int read_BC_BLE(const struct BC *reg, u64 *value)
 	}
 	return ret;
 }
+EXPORT_SYMBOL_GPL(read_BC_BLE);
 
 int read_BC_SMM_BWP(const struct BC *reg, u64 *value)
 {
@@ -514,6 +526,7 @@ int read_BC_SMM_BWP(const struct BC *reg, u64 *value)
 	}
 	return ret;
 }
+EXPORT_SYMBOL_GPL(read_BC_SMM_BWP);
 
 int read_SBASE_Base(const struct SBASE *reg, u64 *value)
 {
@@ -544,6 +557,7 @@ int read_SBASE_Base(const struct SBASE *reg, u64 *value)
 	}
 	return ret;
 }
+EXPORT_SYMBOL_GPL(read_SBASE_Base);
 
 int viddid2pch_arch(u64 vid, u64 did, enum PCH_Arch *arch)
 {

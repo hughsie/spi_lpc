@@ -4,10 +4,6 @@
  *
  * Copyright 2020 (c) Richard Hughes (richard@hughsie.com)
  *                    Daniel Gutson (daniel.gutson@eclypsium.com)
- *
- * This file is licensed under  the terms of the GNU General Public
- * License version 2. This program is licensed "as is" without any
- * warranty of any kind, whether express or implied.
  */
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
@@ -16,6 +12,9 @@
 #include <linux/security.h>
 #include "bios_data_access.h"
 #include "low_level_access.h"
+
+int viddid2pch_arch(u64 vid, u64 did, enum PCH_Arch *arch);
+int viddid2cpu_arch(u64 vid, u64 did, enum CPU_Arch *arch);
 
 #define SIZE_WORD sizeof(u16)
 #define WORD_MASK 0xFFFFu
@@ -36,6 +35,7 @@ static int get_pci_vid_did(u8 bus, u8 dev, u8 fun, u16 *vid, u16 *did)
 {
 	u32 vid_did;
 	int ret = pci_read_dword(&vid_did, bus, dev, fun, 0);
+
 	if (ret == 0) {
 		*vid = LOW_WORD(vid_did);
 		*did = HIGH_WORD(vid_did);
@@ -48,6 +48,7 @@ static int get_pch_arch(enum PCH_Arch *pch_arch)
 	u16 pch_vid;
 	u16 pch_did;
 	int ret = get_pci_vid_did(0, 0x1f, 0, &pch_vid, &pch_did);
+
 	if (ret != 0)
 		return ret;
 
@@ -62,6 +63,7 @@ static int get_cpu_arch(enum CPU_Arch *cpu_arch)
 	u16 cpu_vid;
 	u16 cpu_did;
 	int ret = get_pci_vid_did(0, 0, 0, &cpu_vid, &cpu_did);
+
 	if (ret != 0)
 		return ret;
 
@@ -120,6 +122,7 @@ static const struct file_operations bc_flags_ops = {
 static int __init mod_init(void)
 {
 	int ret = 0;
+
 	if (get_pch_cpu(&pch_arch, &cpu_arch) != 0) {
 		pr_err("Couldn't detect PCH or CPU\n");
 		return -EIO;

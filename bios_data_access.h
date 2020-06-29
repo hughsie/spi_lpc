@@ -1,12 +1,9 @@
-// SPDX-License-Identifier: GPL-2.0
+/* SPDX-License-Identifier: GPL-2.0 */
 /*
  * SPI LPC flash platform security driver
  *
  * Copyright 2020 (c) Daniel Gutson (daniel.gutson@eclypsium.com)
  *
- * This file is licensed under  the terms of the GNU General Public
- * License version 2. This program is licensed "as is" without any
- * warranty of any kind, whether express or implied.
  */
 #ifndef BIOS_DATA_ACCESS_H
 #define BIOS_DATA_ACCESS_H
@@ -172,14 +169,12 @@ struct BC {
 	};
 };
 
-int read_SBASE(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch,
-	       struct SBASE *reg);
-int read_BC(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch, struct BC *reg);
-int read_SPIBAR(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch, u64 *offset);
-int read_BC_BIOSWE(const struct BC *reg, u64 *value);
-int read_BC_BLE(const struct BC *reg, u64 *value);
-int read_BC_SMM_BWP(const struct BC *reg, u64 *value);
-int read_SBASE_Base(const struct SBASE *reg, u64 *value);
-int viddid2pch_arch(u64 vid, u64 did, enum PCH_Arch *arch);
-int viddid2cpu_arch(u64 vid, u64 did, enum CPU_Arch *arch);
+extern int read_SBASE(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch,
+		      struct SBASE *reg);
+extern int read_BC(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch,
+		   struct BC *reg);
+extern int read_BC_BIOSWE(const struct BC *reg, u64 *value);
+extern int read_BC_BLE(const struct BC *reg, u64 *value);
+extern int read_BC_SMM_BWP(const struct BC *reg, u64 *value);
+extern int read_SBASE_Base(const struct SBASE *reg, u64 *value);
 #endif /* BIOS_DATA_ACCESS_H */

@@ -3,10 +3,6 @@
  * SPI LPC flash platform security driver
  *
  * Copyright 2020 (c) Daniel Gutson (daniel.gutson@eclypsium.com)
- *
- * This file is licensed under  the terms of the GNU General Public
- * License version 2. This program is licensed "as is" without any
- * warranty of any kind, whether express or implied.
  */
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
@@ -44,14 +40,14 @@ GENERIC_MMIO_READ(u32, dword, readl)
 	{                                                                      \
 		int ret;                                                       \
 		struct pci_bus *found_bus = pci_find_bus(0, bus);              \
-		pr_debug("Reading PCI 0x%llx 0x%llx 0x%llx 0x%llx \n", bus,    \
+		pr_debug("Reading PCI 0x%llx 0x%llx 0x%llx 0x%llx\n", bus,     \
 			 device, function, offset);                            \
 		if (found_bus != NULL) {                                       \
 			ret = pci_bus_read_config_##Suffix(                    \
 				found_bus, PCI_DEVFN(device, function),        \
 				offset, value);                                \
 		} else {                                                       \
-			pr_err("Couldn't find Bus 0x%lld\n", bus);             \
+			pr_err("Couldn't find Bus 0x%llx\n", bus);             \
 			ret = -1;                                              \
 		}                                                              \
 		return ret;                                                    \
@@ -60,5 +56,4 @@ GENERIC_MMIO_READ(u32, dword, readl)
 GENERIC_PCI_READ(byte, u8)
 GENERIC_PCI_READ(word, u16)
 GENERIC_PCI_READ(dword, u32)
-
 #undef GENERIC_PCI_READ

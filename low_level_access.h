@@ -1,3 +1,10 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+/*
+ * SPI LPC flash platform security driver
+ *
+ * Copyright 2020 (c) Daniel Gutson (daniel.gutson@eclypsium.com)
+ */
+
 #ifndef LOW_LEVEL_H
 #define LOW_LEVEL_H
 
