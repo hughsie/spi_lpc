@@ -67,123 +67,115 @@ struct RegisterArch {
 	};
 };
 
-struct sbase_register_atom_avn_byt {
-	u64 MEMI;
-	u64 Enable;
-	u64 ADDRNG;
-	u64 PREF;
-	u64 Base;
+struct sbase_atom_avn_byt {
+	u64 memi;
+	u64 enable;
+	u64 addrng;
+	u64 pref;
+	u64 base;
 };
 
-struct sbase_register {
+struct spi_sbase {
 	struct RegisterArch register_arch;
 
 	union {
-		struct sbase_register_atom_avn_byt cpu_avn;
-		struct sbase_register_atom_avn_byt cpu_byt;
+		struct sbase_atom_avn_byt cpu_avn;
+		struct sbase_atom_avn_byt cpu_byt;
 	};
 };
 
-struct bios_control_register_pch_3xx_4xx_5xx {
-	u64 BIOSWE;
-	u64 BLE;
-	u64 SRC;
-	u64 TSS;
-	u64 SMM_BWP;
-	u64 BBS;
-	u64 BILD;
-	u64 SPI_SYNC_SS;
-	u64 SPI_ASYNC_SS;
-	u64 ASE_BWP;
+struct bc_pch_3xx_4xx_5xx {
+	u64 bioswe;
+	u64 ble;
+	u64 src;
+	u64 tss;
+	u64 smm_bwp;
+	u64 bbs;
+	u64 bild;
+	u64 spi_sync_ss;
+	u64 spi_async_ss;
+	u64 ase_bwp;
 };
 
-struct bios_control_register_cpu_snb_jkt_ivb_ivt_bdx_hsx {
-	u64 BIOSWE;
-	u64 BLE;
-	u64 SRC;
-	u64 TSS;
-	u64 SMM_BWP;
+struct bc_cpu_snb_jkt_ivb_ivt_bdx_hsx {
+	u64 bioswe;
+	u64 ble;
+	u64 src;
+	u64 tss;
+	u64 smm_bwp;
 };
 
-struct bios_control_register_cpu_skl_kbl_cfl {
-	u64 BIOSWE;
-	u64 BLE;
-	u64 SRC;
-	u64 TSS;
-	u64 SMM_BWP;
-	u64 BBS;
-	u64 BILD;
+struct bc_cpu_skl_kbl_cfl {
+	u64 bioswe;
+	u64 ble;
+	u64 src;
+	u64 tss;
+	u64 smm_bwp;
+	u64 bbs;
+	u64 bild;
 };
 
-struct bios_control_register_cpu_apl_glk {
-	u64 BIOSWE;
-	u64 BLE;
-	u64 SRC;
-	u64 TSS;
-	u64 SMM_BWP;
-	u64 BBS;
-	u64 BILD;
-	u64 SPI_SYNC_SS;
-	u64 OSFH;
-	u64 SPI_ASYNC_SS;
-	u64 ASE_BWP;
+struct bc_cpu_apl_glk {
+	u64 bioswe;
+	u64 ble;
+	u64 src;
+	u64 tss;
+	u64 smm_bwp;
+	u64 bbs;
+	u64 bild;
+	u64 spi_sync_ss;
+	u64 osfh;
+	u64 spi_async_ss;
+	u64 ase_bwp;
 };
 
-struct bios_control_register_cpu_atom_avn {
-	u64 BIOSWE;
-	u64 BLE;
-	u64 SRC;
-	u64 TSS;
-	u64 SMM_BWP;
+struct bc_cpu_atom_avn {
+	u64 bioswe;
+	u64 ble;
+	u64 src;
+	u64 tss;
+	u64 smm_bwp;
 };
 
-struct bios_control_register_cpu_atom_byt {
-	u64 BIOSWE;
-	u64 BLE;
-	u64 SRC;
-	u64 SMM_BWP;
+struct bc_cpu_atom_byt {
+	u64 bioswe;
+	u64 ble;
+	u64 src;
+	u64 smm_bwp;
 };
 
-struct bios_control_register {
+struct spi_bc {
 	struct RegisterArch register_arch;
 
 	union {
-		struct bios_control_register_pch_3xx_4xx_5xx pch_3xx;
-		struct bios_control_register_pch_3xx_4xx_5xx pch_4xx;
-		struct bios_control_register_pch_3xx_4xx_5xx pch_495;
-		struct bios_control_register_pch_3xx_4xx_5xx pch_5xx;
-		struct bios_control_register_cpu_snb_jkt_ivb_ivt_bdx_hsx cpu_snb;
-		struct bios_control_register_cpu_snb_jkt_ivb_ivt_bdx_hsx cpu_jkt;
-		struct bios_control_register_cpu_snb_jkt_ivb_ivt_bdx_hsx cpu_ivb;
-		struct bios_control_register_cpu_snb_jkt_ivb_ivt_bdx_hsx cpu_ivt;
-		struct bios_control_register_cpu_snb_jkt_ivb_ivt_bdx_hsx cpu_bdw;
-		struct bios_control_register_cpu_snb_jkt_ivb_ivt_bdx_hsx cpu_bdx;
-		struct bios_control_register_cpu_snb_jkt_ivb_ivt_bdx_hsx cpu_hsx;
-		struct bios_control_register_cpu_snb_jkt_ivb_ivt_bdx_hsx cpu_hsw;
-		struct bios_control_register_cpu_skl_kbl_cfl cpu_skl;
-		struct bios_control_register_cpu_skl_kbl_cfl cpu_kbl;
-		struct bios_control_register_cpu_skl_kbl_cfl cpu_cfl;
-		struct bios_control_register_cpu_apl_glk cpu_apl;
-		struct bios_control_register_cpu_apl_glk cpu_glk;
-		struct bios_control_register_cpu_atom_avn cpu_avn;
-		struct bios_control_register_cpu_atom_byt cpu_byt;
+		struct bc_pch_3xx_4xx_5xx pch_3xx;
+		struct bc_pch_3xx_4xx_5xx pch_4xx;
+		struct bc_pch_3xx_4xx_5xx pch_495;
+		struct bc_pch_3xx_4xx_5xx pch_5xx;
+		struct bc_cpu_snb_jkt_ivb_ivt_bdx_hsx cpu_snb;
+		struct bc_cpu_snb_jkt_ivb_ivt_bdx_hsx cpu_jkt;
+		struct bc_cpu_snb_jkt_ivb_ivt_bdx_hsx cpu_ivb;
+		struct bc_cpu_snb_jkt_ivb_ivt_bdx_hsx cpu_ivt;
+		struct bc_cpu_snb_jkt_ivb_ivt_bdx_hsx cpu_bdw;
+		struct bc_cpu_snb_jkt_ivb_ivt_bdx_hsx cpu_bdx;
+		struct bc_cpu_snb_jkt_ivb_ivt_bdx_hsx cpu_hsx;
+		struct bc_cpu_snb_jkt_ivb_ivt_bdx_hsx cpu_hsw;
+		struct bc_cpu_skl_kbl_cfl cpu_skl;
+		struct bc_cpu_skl_kbl_cfl cpu_kbl;
+		struct bc_cpu_skl_kbl_cfl cpu_cfl;
+		struct bc_cpu_apl_glk cpu_apl;
+		struct bc_cpu_apl_glk cpu_glk;
+		struct bc_cpu_atom_avn cpu_avn;
+		struct bc_cpu_atom_byt cpu_byt;
 	};
 };
 
-extern int read_sbase_register(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch,
-			       struct sbase_register *reg);
-extern int read_bios_control_register(enum PCH_Arch pch_arch,
-				      enum CPU_Arch cpu_arch,
-				      struct bios_control_register *reg);
-extern int
-read_bios_control_register_BIOSWE(const struct bios_control_register *reg,
-				  u64 *value);
-extern int
-read_bios_control_register_BLE(const struct bios_control_register *reg,
-			       u64 *value);
-extern int
-read_bios_control_register_SMM_BWP(const struct bios_control_register *reg,
-				   u64 *value);
-extern int read_sbase_register_Base(const struct sbase_register *reg,
-				    u64 *value);
+extern int spi_read_sbase(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch,
+			  struct spi_sbase *reg);
+extern int spi_read_bc(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch,
+		       struct spi_bc *reg);
+extern int spi_read_bc_bioswe(const struct spi_bc *reg, u64 *value);
+extern int spi_read_bc_ble(const struct spi_bc *reg, u64 *value);
+extern int spi_read_bc_smm_bwp(const struct spi_bc *reg, u64 *value);
+extern int spi_read_sbase_base(const struct spi_sbase *reg, u64 *value);
 #endif /* BIOS_DATA_ACCESS_H */

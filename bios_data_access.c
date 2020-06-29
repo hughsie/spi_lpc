@@ -21,11 +21,10 @@
 #define extract_bits_shifted(type, value, start, size)                         \
 	(extract_bits(type, value, start, size) >> (start))
 
-static int read_SPIBAR(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch,
+static int read_spibar(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch,
 		       u64 *offset);
 
-static int
-read_sbase_register_atom_avn_byt(struct sbase_register_atom_avn_byt *reg)
+static int read_sbase_atom_avn_byt(struct sbase_atom_avn_byt *reg)
 {
 	u32 value;
 	const int ret = pci_read_dword(&value, 0x0, 0x1f, 0x0, 0x54);
@@ -33,17 +32,17 @@ read_sbase_register_atom_avn_byt(struct sbase_register_atom_avn_byt *reg)
 	if (ret != 0)
 		return ret;
 
-	reg->MEMI = extract_bits_shifted(u32, value, 0, 1);
-	reg->Enable = extract_bits_shifted(u32, value, 1, 1);
-	reg->ADDRNG = extract_bits_shifted(u32, value, 2, 1);
-	reg->PREF = extract_bits_shifted(u32, value, 3, 1);
-	reg->Base = extract_bits(u32, value, 9, 23);
+	reg->memi = extract_bits_shifted(u32, value, 0, 1);
+	reg->enable = extract_bits_shifted(u32, value, 1, 1);
+	reg->addrng = extract_bits_shifted(u32, value, 2, 1);
+	reg->pref = extract_bits_shifted(u32, value, 3, 1);
+	reg->base = extract_bits(u32, value, 9, 23);
 
 	return 0;
 }
 
-int read_sbase_register(enum PCH_Arch pch_arch __maybe_unused,
-			enum CPU_Arch cpu_arch, struct sbase_register *reg)
+int spi_read_sbase(enum PCH_Arch pch_arch __maybe_unused,
+		   enum CPU_Arch cpu_arch, struct spi_sbase *reg)
 {
 	int ret = 0;
 
@@ -53,17 +52,16 @@ int read_sbase_register(enum PCH_Arch pch_arch __maybe_unused,
 	switch (cpu_arch) {
 	case cpu_avn:
 	case cpu_byt:
-		ret = read_sbase_register_atom_avn_byt(&reg->cpu_byt);
+		ret = read_sbase_atom_avn_byt(&reg->cpu_byt);
 		break;
 	default:
 		ret = -EIO;
 	}
 	return ret;
 }
-EXPORT_SYMBOL_GPL(read_sbase_register);
+EXPORT_SYMBOL_GPL(spi_read_sbase);
 
-static int read_bios_control_register_pch_3xx_4xx_5xx(
-	struct bios_control_register_pch_3xx_4xx_5xx *reg)
+static int read_bc_pch_3xx_4xx_5xx(struct bc_pch_3xx_4xx_5xx *reg)
 {
 	u32 value;
 	const int ret = pci_read_dword(&value, 0x0, 0x1f, 0x5, 0xdc);
@@ -71,22 +69,22 @@ static int read_bios_control_register_pch_3xx_4xx_5xx(
 	if (ret != 0)
 		return ret;
 
-	reg->BIOSWE = extract_bits_shifted(u32, value, 0, 1);
-	reg->BLE = extract_bits_shifted(u32, value, 1, 1);
-	reg->SRC = extract_bits_shifted(u32, value, 2, 2);
-	reg->TSS = extract_bits_shifted(u32, value, 4, 1);
-	reg->SMM_BWP = extract_bits_shifted(u32, value, 5, 1);
-	reg->BBS = extract_bits_shifted(u32, value, 6, 1);
-	reg->BILD = extract_bits_shifted(u32, value, 7, 1);
-	reg->SPI_SYNC_SS = extract_bits_shifted(u32, value, 8, 1);
-	reg->SPI_ASYNC_SS = extract_bits_shifted(u32, value, 10, 1);
-	reg->ASE_BWP = extract_bits_shifted(u32, value, 11, 1);
+	reg->bioswe = extract_bits_shifted(u32, value, 0, 1);
+	reg->ble = extract_bits_shifted(u32, value, 1, 1);
+	reg->src = extract_bits_shifted(u32, value, 2, 2);
+	reg->tss = extract_bits_shifted(u32, value, 4, 1);
+	reg->smm_bwp = extract_bits_shifted(u32, value, 5, 1);
+	reg->bbs = extract_bits_shifted(u32, value, 6, 1);
+	reg->bild = extract_bits_shifted(u32, value, 7, 1);
+	reg->spi_sync_ss = extract_bits_shifted(u32, value, 8, 1);
+	reg->spi_async_ss = extract_bits_shifted(u32, value, 10, 1);
+	reg->ase_bwp = extract_bits_shifted(u32, value, 11, 1);
 
 	return 0;
 }
 
-static int read_bios_control_register_cpu_snb_jkt_ivb_ivt_bdx_hsx(
-	struct bios_control_register_cpu_snb_jkt_ivb_ivt_bdx_hsx *reg)
+static int
+read_bc_cpu_snb_jkt_ivb_ivt_bdx_hsx(struct bc_cpu_snb_jkt_ivb_ivt_bdx_hsx *reg)
 {
 	u32 value;
 	const int ret = pci_read_dword(&value, 0x0, 0x1f, 0x5, 0xdc);
@@ -94,17 +92,16 @@ static int read_bios_control_register_cpu_snb_jkt_ivb_ivt_bdx_hsx(
 	if (ret != 0)
 		return ret;
 
-	reg->BIOSWE = extract_bits_shifted(u32, value, 0, 1);
-	reg->BLE = extract_bits_shifted(u32, value, 1, 1);
-	reg->SRC = extract_bits_shifted(u32, value, 2, 2);
-	reg->TSS = extract_bits_shifted(u32, value, 4, 1);
-	reg->SMM_BWP = extract_bits_shifted(u32, value, 5, 1);
+	reg->bioswe = extract_bits_shifted(u32, value, 0, 1);
+	reg->ble = extract_bits_shifted(u32, value, 1, 1);
+	reg->src = extract_bits_shifted(u32, value, 2, 2);
+	reg->tss = extract_bits_shifted(u32, value, 4, 1);
+	reg->smm_bwp = extract_bits_shifted(u32, value, 5, 1);
 
 	return 0;
 }
 
-static int read_bios_control_register_cpu_skl_kbl_cfl(
-	struct bios_control_register_cpu_skl_kbl_cfl *reg)
+static int read_bc_cpu_skl_kbl_cfl(struct bc_cpu_skl_kbl_cfl *reg)
 {
 	u32 value;
 	const int ret = pci_read_dword(&value, 0x0, 0x1f, 0x5, 0xdc);
@@ -112,19 +109,18 @@ static int read_bios_control_register_cpu_skl_kbl_cfl(
 	if (ret != 0)
 		return ret;
 
-	reg->BIOSWE = extract_bits_shifted(u32, value, 0, 1);
-	reg->BLE = extract_bits_shifted(u32, value, 1, 1);
-	reg->SRC = extract_bits_shifted(u32, value, 2, 2);
-	reg->TSS = extract_bits_shifted(u32, value, 4, 1);
-	reg->SMM_BWP = extract_bits_shifted(u32, value, 5, 1);
-	reg->BBS = extract_bits_shifted(u32, value, 6, 1);
-	reg->BILD = extract_bits_shifted(u32, value, 7, 1);
+	reg->bioswe = extract_bits_shifted(u32, value, 0, 1);
+	reg->ble = extract_bits_shifted(u32, value, 1, 1);
+	reg->src = extract_bits_shifted(u32, value, 2, 2);
+	reg->tss = extract_bits_shifted(u32, value, 4, 1);
+	reg->smm_bwp = extract_bits_shifted(u32, value, 5, 1);
+	reg->bbs = extract_bits_shifted(u32, value, 6, 1);
+	reg->bild = extract_bits_shifted(u32, value, 7, 1);
 
 	return 0;
 }
 
-static int read_bios_control_register_cpu_apl_glk(
-	struct bios_control_register_cpu_apl_glk *reg)
+static int read_bc_cpu_apl_glk(struct bc_cpu_apl_glk *reg)
 {
 	u32 value;
 	const int ret = pci_read_dword(&value, 0x0, 0xd, 0x2, 0xdc);
@@ -132,30 +128,29 @@ static int read_bios_control_register_cpu_apl_glk(
 	if (ret != 0)
 		return ret;
 
-	reg->BIOSWE = extract_bits_shifted(u32, value, 0, 1);
-	reg->BLE = extract_bits_shifted(u32, value, 1, 1);
-	reg->SRC = extract_bits_shifted(u32, value, 2, 2);
-	reg->TSS = extract_bits_shifted(u32, value, 4, 1);
-	reg->SMM_BWP = extract_bits_shifted(u32, value, 5, 1);
-	reg->BBS = extract_bits_shifted(u32, value, 6, 1);
-	reg->BILD = extract_bits_shifted(u32, value, 7, 1);
-	reg->SPI_SYNC_SS = extract_bits_shifted(u32, value, 8, 1);
-	reg->OSFH = extract_bits_shifted(u32, value, 9, 1);
-	reg->SPI_ASYNC_SS = extract_bits_shifted(u32, value, 10, 1);
-	reg->ASE_BWP = extract_bits_shifted(u32, value, 11, 1);
+	reg->bioswe = extract_bits_shifted(u32, value, 0, 1);
+	reg->ble = extract_bits_shifted(u32, value, 1, 1);
+	reg->src = extract_bits_shifted(u32, value, 2, 2);
+	reg->tss = extract_bits_shifted(u32, value, 4, 1);
+	reg->smm_bwp = extract_bits_shifted(u32, value, 5, 1);
+	reg->bbs = extract_bits_shifted(u32, value, 6, 1);
+	reg->bild = extract_bits_shifted(u32, value, 7, 1);
+	reg->spi_sync_ss = extract_bits_shifted(u32, value, 8, 1);
+	reg->osfh = extract_bits_shifted(u32, value, 9, 1);
+	reg->spi_async_ss = extract_bits_shifted(u32, value, 10, 1);
+	reg->ase_bwp = extract_bits_shifted(u32, value, 11, 1);
 
 	return 0;
 }
 
-static int read_bios_control_register_cpu_atom_avn(
-	struct bios_control_register_cpu_atom_avn *reg, enum PCH_Arch pch_arch,
-	enum CPU_Arch cpu_arch)
+static int read_bc_cpu_atom_avn(struct bc_cpu_atom_avn *reg,
+				enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch)
 {
 	u8 value;
 	int ret;
 	u64 barOffset;
 
-	ret = read_SPIBAR(pch_arch, cpu_arch, &barOffset);
+	ret = read_spibar(pch_arch, cpu_arch, &barOffset);
 	if (ret != 0)
 		return ret;
 
@@ -163,24 +158,23 @@ static int read_bios_control_register_cpu_atom_avn(
 	if (ret != 0)
 		return ret;
 
-	reg->BIOSWE = extract_bits_shifted(u8, value, 0, 1);
-	reg->BLE = extract_bits_shifted(u8, value, 1, 1);
-	reg->SRC = extract_bits_shifted(u8, value, 2, 2);
-	reg->TSS = extract_bits_shifted(u8, value, 4, 1);
-	reg->SMM_BWP = extract_bits_shifted(u8, value, 5, 1);
+	reg->bioswe = extract_bits_shifted(u8, value, 0, 1);
+	reg->ble = extract_bits_shifted(u8, value, 1, 1);
+	reg->src = extract_bits_shifted(u8, value, 2, 2);
+	reg->tss = extract_bits_shifted(u8, value, 4, 1);
+	reg->smm_bwp = extract_bits_shifted(u8, value, 5, 1);
 
 	return 0;
 }
 
-static int read_bios_control_register_cpu_atom_byt(
-	struct bios_control_register_cpu_atom_byt *reg, enum PCH_Arch pch_arch,
-	enum CPU_Arch cpu_arch)
+static int read_bc_cpu_atom_byt(struct bc_cpu_atom_byt *reg,
+				enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch)
 {
 	u32 value;
 	int ret;
 	u64 barOffset;
 
-	ret = read_SPIBAR(pch_arch, cpu_arch, &barOffset);
+	ret = read_spibar(pch_arch, cpu_arch, &barOffset);
 	if (ret != 0)
 		return ret;
 
@@ -188,16 +182,16 @@ static int read_bios_control_register_cpu_atom_byt(
 	if (ret != 0)
 		return ret;
 
-	reg->BIOSWE = extract_bits_shifted(u32, value, 0, 1);
-	reg->BLE = extract_bits_shifted(u32, value, 1, 1);
-	reg->SRC = extract_bits_shifted(u32, value, 2, 2);
-	reg->SMM_BWP = extract_bits_shifted(u32, value, 5, 1);
+	reg->bioswe = extract_bits_shifted(u32, value, 0, 1);
+	reg->ble = extract_bits_shifted(u32, value, 1, 1);
+	reg->src = extract_bits_shifted(u32, value, 2, 2);
+	reg->smm_bwp = extract_bits_shifted(u32, value, 5, 1);
 
 	return 0;
 }
 
-int read_bios_control_register(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch,
-			       struct bios_control_register *reg)
+int spi_read_bc(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch,
+		struct spi_bc *reg)
 {
 	int ret = 0;
 
@@ -209,7 +203,7 @@ int read_bios_control_register(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch,
 	case pch_4xx:
 	case pch_495:
 	case pch_5xx:
-		ret = read_bios_control_register_pch_3xx_4xx_5xx(&reg->pch_5xx);
+		ret = read_bc_pch_3xx_4xx_5xx(&reg->pch_5xx);
 		break;
 	default:
 		reg->register_arch.source = RegSource_CPU;
@@ -224,27 +218,25 @@ int read_bios_control_register(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch,
 		case cpu_bdx:
 		case cpu_hsx:
 		case cpu_hsw:
-			ret = read_bios_control_register_cpu_snb_jkt_ivb_ivt_bdx_hsx(
+			ret = read_bc_cpu_snb_jkt_ivb_ivt_bdx_hsx(
 				&reg->cpu_hsw);
 			break;
 		case cpu_skl:
 		case cpu_kbl:
 		case cpu_cfl:
-			ret = read_bios_control_register_cpu_skl_kbl_cfl(
-				&reg->cpu_cfl);
+			ret = read_bc_cpu_skl_kbl_cfl(&reg->cpu_cfl);
 			break;
 		case cpu_apl:
 		case cpu_glk:
-			ret = read_bios_control_register_cpu_apl_glk(
-				&reg->cpu_glk);
+			ret = read_bc_cpu_apl_glk(&reg->cpu_glk);
 			break;
 		case cpu_avn:
-			ret = read_bios_control_register_cpu_atom_avn(
-				&reg->cpu_avn, pch_arch, cpu_arch);
+			ret = read_bc_cpu_atom_avn(&reg->cpu_avn, pch_arch,
+						   cpu_arch);
 			break;
 		case cpu_byt:
-			ret = read_bios_control_register_cpu_atom_byt(
-				&reg->cpu_byt, pch_arch, cpu_arch);
+			ret = read_bc_cpu_atom_byt(&reg->cpu_byt, pch_arch,
+						   cpu_arch);
 			break;
 		default:
 			ret = -EIO;
@@ -252,9 +244,9 @@ int read_bios_control_register(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch,
 	}
 	return ret;
 }
-EXPORT_SYMBOL_GPL(read_bios_control_register);
+EXPORT_SYMBOL_GPL(spi_read_bc);
 
-int read_SPIBAR(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch, u64 *offset)
+int read_spibar(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch, u64 *offset)
 {
 	int ret = 0;
 	u64 field_offset;
@@ -262,11 +254,11 @@ int read_SPIBAR(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch, u64 *offset)
 	switch (cpu_arch) {
 	case cpu_avn:
 	case cpu_byt: {
-		struct sbase_register reg;
+		struct spi_sbase reg;
 
-		ret = read_sbase_register(pch_arch, cpu_arch, &reg);
+		ret = spi_read_sbase(pch_arch, cpu_arch, &reg);
 		if (ret == 0) {
-			ret = read_sbase_register_Base(&reg, &field_offset);
+			ret = spi_read_sbase_base(&reg, &field_offset);
 			*offset = field_offset + 0;
 		}
 	} break;
@@ -277,8 +269,7 @@ int read_SPIBAR(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch, u64 *offset)
 	return ret;
 }
 
-int read_bios_control_register_BIOSWE(const struct bios_control_register *reg,
-				      u64 *value)
+int spi_read_bc_bioswe(const struct spi_bc *reg, u64 *value)
 {
 	int ret = 0;
 
@@ -286,19 +277,19 @@ int read_bios_control_register_BIOSWE(const struct bios_control_register *reg,
 	case RegSource_PCH:
 		switch (reg->register_arch.pch_arch) {
 		case pch_3xx:
-			*value = reg->pch_3xx.BIOSWE;
+			*value = reg->pch_3xx.bioswe;
 			break;
 		case pch_4xx:
-			*value = reg->pch_4xx.BIOSWE;
+			*value = reg->pch_4xx.bioswe;
 			break;
 		case pch_495:
-			*value = reg->pch_495.BIOSWE;
+			*value = reg->pch_495.bioswe;
 			break;
 		case pch_5xx:
-			*value = reg->pch_5xx.BIOSWE;
+			*value = reg->pch_5xx.bioswe;
 			break;
 		default:
-			/* requested PCH arch hasn't field BIOSWE */
+			/* requested PCH arch hasn't field bioswe */
 			ret = -EIO;
 			*value = 0;
 		}
@@ -306,52 +297,52 @@ int read_bios_control_register_BIOSWE(const struct bios_control_register *reg,
 	case RegSource_CPU:
 		switch (reg->register_arch.cpu_arch) {
 		case cpu_snb:
-			*value = reg->cpu_snb.BIOSWE;
+			*value = reg->cpu_snb.bioswe;
 			break;
 		case cpu_jkt:
-			*value = reg->cpu_jkt.BIOSWE;
+			*value = reg->cpu_jkt.bioswe;
 			break;
 		case cpu_ivb:
-			*value = reg->cpu_ivb.BIOSWE;
+			*value = reg->cpu_ivb.bioswe;
 			break;
 		case cpu_ivt:
-			*value = reg->cpu_ivt.BIOSWE;
+			*value = reg->cpu_ivt.bioswe;
 			break;
 		case cpu_bdw:
-			*value = reg->cpu_bdw.BIOSWE;
+			*value = reg->cpu_bdw.bioswe;
 			break;
 		case cpu_bdx:
-			*value = reg->cpu_bdx.BIOSWE;
+			*value = reg->cpu_bdx.bioswe;
 			break;
 		case cpu_hsx:
-			*value = reg->cpu_hsx.BIOSWE;
+			*value = reg->cpu_hsx.bioswe;
 			break;
 		case cpu_hsw:
-			*value = reg->cpu_hsw.BIOSWE;
+			*value = reg->cpu_hsw.bioswe;
 			break;
 		case cpu_skl:
-			*value = reg->cpu_skl.BIOSWE;
+			*value = reg->cpu_skl.bioswe;
 			break;
 		case cpu_kbl:
-			*value = reg->cpu_kbl.BIOSWE;
+			*value = reg->cpu_kbl.bioswe;
 			break;
 		case cpu_cfl:
-			*value = reg->cpu_cfl.BIOSWE;
+			*value = reg->cpu_cfl.bioswe;
 			break;
 		case cpu_apl:
-			*value = reg->cpu_apl.BIOSWE;
+			*value = reg->cpu_apl.bioswe;
 			break;
 		case cpu_glk:
-			*value = reg->cpu_glk.BIOSWE;
+			*value = reg->cpu_glk.bioswe;
 			break;
 		case cpu_avn:
-			*value = reg->cpu_avn.BIOSWE;
+			*value = reg->cpu_avn.bioswe;
 			break;
 		case cpu_byt:
-			*value = reg->cpu_byt.BIOSWE;
+			*value = reg->cpu_byt.bioswe;
 			break;
 		default:
-			/* requested CPU arch hasn't field BIOSWE */
+			/* requested CPU arch hasn't field bioswe */
 			ret = -EIO;
 			*value = 0;
 		}
@@ -362,10 +353,9 @@ int read_bios_control_register_BIOSWE(const struct bios_control_register *reg,
 	}
 	return ret;
 }
-EXPORT_SYMBOL_GPL(read_bios_control_register_BIOSWE);
+EXPORT_SYMBOL_GPL(spi_read_bc_bioswe);
 
-int read_bios_control_register_BLE(const struct bios_control_register *reg,
-				   u64 *value)
+int spi_read_bc_ble(const struct spi_bc *reg, u64 *value)
 {
 	int ret = 0;
 
@@ -373,19 +363,19 @@ int read_bios_control_register_BLE(const struct bios_control_register *reg,
 	case RegSource_PCH:
 		switch (reg->register_arch.pch_arch) {
 		case pch_3xx:
-			*value = reg->pch_3xx.BLE;
+			*value = reg->pch_3xx.ble;
 			break;
 		case pch_4xx:
-			*value = reg->pch_4xx.BLE;
+			*value = reg->pch_4xx.ble;
 			break;
 		case pch_495:
-			*value = reg->pch_495.BLE;
+			*value = reg->pch_495.ble;
 			break;
 		case pch_5xx:
-			*value = reg->pch_5xx.BLE;
+			*value = reg->pch_5xx.ble;
 			break;
 		default:
-			/* requested PCH arch hasn't field BLE */
+			/* requested PCH arch hasn't field ble */
 			ret = -EIO;
 			*value = 0;
 		}
@@ -393,52 +383,52 @@ int read_bios_control_register_BLE(const struct bios_control_register *reg,
 	case RegSource_CPU:
 		switch (reg->register_arch.cpu_arch) {
 		case cpu_snb:
-			*value = reg->cpu_snb.BLE;
+			*value = reg->cpu_snb.ble;
 			break;
 		case cpu_jkt:
-			*value = reg->cpu_jkt.BLE;
+			*value = reg->cpu_jkt.ble;
 			break;
 		case cpu_ivb:
-			*value = reg->cpu_ivb.BLE;
+			*value = reg->cpu_ivb.ble;
 			break;
 		case cpu_ivt:
-			*value = reg->cpu_ivt.BLE;
+			*value = reg->cpu_ivt.ble;
 			break;
 		case cpu_bdw:
-			*value = reg->cpu_bdw.BLE;
+			*value = reg->cpu_bdw.ble;
 			break;
 		case cpu_bdx:
-			*value = reg->cpu_bdx.BLE;
+			*value = reg->cpu_bdx.ble;
 			break;
 		case cpu_hsx:
-			*value = reg->cpu_hsx.BLE;
+			*value = reg->cpu_hsx.ble;
 			break;
 		case cpu_hsw:
-			*value = reg->cpu_hsw.BLE;
+			*value = reg->cpu_hsw.ble;
 			break;
 		case cpu_skl:
-			*value = reg->cpu_skl.BLE;
+			*value = reg->cpu_skl.ble;
 			break;
 		case cpu_kbl:
-			*value = reg->cpu_kbl.BLE;
+			*value = reg->cpu_kbl.ble;
 			break;
 		case cpu_cfl:
-			*value = reg->cpu_cfl.BLE;
+			*value = reg->cpu_cfl.ble;
 			break;
 		case cpu_apl:
-			*value = reg->cpu_apl.BLE;
+			*value = reg->cpu_apl.ble;
 			break;
 		case cpu_glk:
-			*value = reg->cpu_glk.BLE;
+			*value = reg->cpu_glk.ble;
 			break;
 		case cpu_avn:
-			*value = reg->cpu_avn.BLE;
+			*value = reg->cpu_avn.ble;
 			break;
 		case cpu_byt:
-			*value = reg->cpu_byt.BLE;
+			*value = reg->cpu_byt.ble;
 			break;
 		default:
-			/* requested CPU arch hasn't field BLE */
+			/* requested CPU arch hasn't field ble */
 			ret = -EIO;
 			*value = 0;
 		}
@@ -449,10 +439,9 @@ int read_bios_control_register_BLE(const struct bios_control_register *reg,
 	}
 	return ret;
 }
-EXPORT_SYMBOL_GPL(read_bios_control_register_BLE);
+EXPORT_SYMBOL_GPL(spi_read_bc_ble);
 
-int read_bios_control_register_SMM_BWP(const struct bios_control_register *reg,
-				       u64 *value)
+int spi_read_bc_smm_bwp(const struct spi_bc *reg, u64 *value)
 {
 	int ret = 0;
 
@@ -460,19 +449,19 @@ int read_bios_control_register_SMM_BWP(const struct bios_control_register *reg,
 	case RegSource_PCH:
 		switch (reg->register_arch.pch_arch) {
 		case pch_3xx:
-			*value = reg->pch_3xx.SMM_BWP;
+			*value = reg->pch_3xx.smm_bwp;
 			break;
 		case pch_4xx:
-			*value = reg->pch_4xx.SMM_BWP;
+			*value = reg->pch_4xx.smm_bwp;
 			break;
 		case pch_495:
-			*value = reg->pch_495.SMM_BWP;
+			*value = reg->pch_495.smm_bwp;
 			break;
 		case pch_5xx:
-			*value = reg->pch_5xx.SMM_BWP;
+			*value = reg->pch_5xx.smm_bwp;
 			break;
 		default:
-			/* requested PCH arch hasn't field SMM_BWP */
+			/* requested PCH arch hasn't field smm_bwp */
 			ret = -EIO;
 			*value = 0;
 		}
@@ -480,52 +469,52 @@ int read_bios_control_register_SMM_BWP(const struct bios_control_register *reg,
 	case RegSource_CPU:
 		switch (reg->register_arch.cpu_arch) {
 		case cpu_snb:
-			*value = reg->cpu_snb.SMM_BWP;
+			*value = reg->cpu_snb.smm_bwp;
 			break;
 		case cpu_jkt:
-			*value = reg->cpu_jkt.SMM_BWP;
+			*value = reg->cpu_jkt.smm_bwp;
 			break;
 		case cpu_ivb:
-			*value = reg->cpu_ivb.SMM_BWP;
+			*value = reg->cpu_ivb.smm_bwp;
 			break;
 		case cpu_ivt:
-			*value = reg->cpu_ivt.SMM_BWP;
+			*value = reg->cpu_ivt.smm_bwp;
 			break;
 		case cpu_bdw:
-			*value = reg->cpu_bdw.SMM_BWP;
+			*value = reg->cpu_bdw.smm_bwp;
 			break;
 		case cpu_bdx:
-			*value = reg->cpu_bdx.SMM_BWP;
+			*value = reg->cpu_bdx.smm_bwp;
 			break;
 		case cpu_hsx:
-			*value = reg->cpu_hsx.SMM_BWP;
+			*value = reg->cpu_hsx.smm_bwp;
 			break;
 		case cpu_hsw:
-			*value = reg->cpu_hsw.SMM_BWP;
+			*value = reg->cpu_hsw.smm_bwp;
 			break;
 		case cpu_skl:
-			*value = reg->cpu_skl.SMM_BWP;
+			*value = reg->cpu_skl.smm_bwp;
 			break;
 		case cpu_kbl:
-			*value = reg->cpu_kbl.SMM_BWP;
+			*value = reg->cpu_kbl.smm_bwp;
 			break;
 		case cpu_cfl:
-			*value = reg->cpu_cfl.SMM_BWP;
+			*value = reg->cpu_cfl.smm_bwp;
 			break;
 		case cpu_apl:
-			*value = reg->cpu_apl.SMM_BWP;
+			*value = reg->cpu_apl.smm_bwp;
 			break;
 		case cpu_glk:
-			*value = reg->cpu_glk.SMM_BWP;
+			*value = reg->cpu_glk.smm_bwp;
 			break;
 		case cpu_avn:
-			*value = reg->cpu_avn.SMM_BWP;
+			*value = reg->cpu_avn.smm_bwp;
 			break;
 		case cpu_byt:
-			*value = reg->cpu_byt.SMM_BWP;
+			*value = reg->cpu_byt.smm_bwp;
 			break;
 		default:
-			/* requested CPU arch hasn't field SMM_BWP */
+			/* requested CPU arch hasn't field smm_bwp */
 			ret = -EIO;
 			*value = 0;
 		}
@@ -536,9 +525,9 @@ int read_bios_control_register_SMM_BWP(const struct bios_control_register *reg,
 	}
 	return ret;
 }
-EXPORT_SYMBOL_GPL(read_bios_control_register_SMM_BWP);
+EXPORT_SYMBOL_GPL(spi_read_bc_smm_bwp);
 
-int read_sbase_register_Base(const struct sbase_register *reg, u64 *value)
+int spi_read_sbase_base(const struct spi_sbase *reg, u64 *value)
 {
 	int ret = 0;
 
@@ -550,13 +539,13 @@ int read_sbase_register_Base(const struct sbase_register *reg, u64 *value)
 	case RegSource_CPU:
 		switch (reg->register_arch.cpu_arch) {
 		case cpu_avn:
-			*value = reg->cpu_avn.Base;
+			*value = reg->cpu_avn.base;
 			break;
 		case cpu_byt:
-			*value = reg->cpu_byt.Base;
+			*value = reg->cpu_byt.base;
 			break;
 		default:
-			/* requested CPU arch hasn't field Base */
+			/* requested CPU arch hasn't field base */
 			ret = -EIO;
 			*value = 0;
 		}
@@ -567,4 +556,4 @@ int read_sbase_register_Base(const struct sbase_register *reg, u64 *value)
 	}
 	return ret;
 }
-EXPORT_SYMBOL_GPL(read_sbase_register_Base);
+EXPORT_SYMBOL_GPL(spi_read_sbase_base);
