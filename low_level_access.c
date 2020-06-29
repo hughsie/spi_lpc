@@ -25,7 +25,7 @@
 		} else {                                                       \
 			pr_err("Failed to MAP IO memory: 0x%llx\n",            \
 			       phys_address);                                  \
-			ret = -1;                                              \
+			ret = -EIO;                                            \
 		}                                                              \
 		return ret;                                                    \
 	}
@@ -48,7 +48,7 @@ GENERIC_MMIO_READ(u32, dword, readl)
 				offset, value);                                \
 		} else {                                                       \
 			pr_err("Couldn't find Bus 0x%llx\n", bus);             \
-			ret = -1;                                              \
+			ret = -EIO;                                            \
 		}                                                              \
 		return ret;                                                    \
 	}
