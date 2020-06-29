@@ -67,7 +67,7 @@ struct RegisterArch {
 	};
 };
 
-struct SBASE_atom_avn_byt {
+struct sbase_register_atom_avn_byt {
 	u64 MEMI;
 	u64 Enable;
 	u64 ADDRNG;
@@ -75,16 +75,16 @@ struct SBASE_atom_avn_byt {
 	u64 Base;
 };
 
-struct SBASE {
+struct sbase_register {
 	struct RegisterArch register_arch;
 
 	union {
-		struct SBASE_atom_avn_byt cpu_avn;
-		struct SBASE_atom_avn_byt cpu_byt;
+		struct sbase_register_atom_avn_byt cpu_avn;
+		struct sbase_register_atom_avn_byt cpu_byt;
 	};
 };
 
-struct BC_pch_3xx_4xx_5xx {
+struct bios_control_register_pch_3xx_4xx_5xx {
 	u64 BIOSWE;
 	u64 BLE;
 	u64 SRC;
@@ -97,7 +97,7 @@ struct BC_pch_3xx_4xx_5xx {
 	u64 ASE_BWP;
 };
 
-struct BC_cpu_snb_jkt_ivb_ivt_bdx_hsx {
+struct bios_control_register_cpu_snb_jkt_ivb_ivt_bdx_hsx {
 	u64 BIOSWE;
 	u64 BLE;
 	u64 SRC;
@@ -105,7 +105,7 @@ struct BC_cpu_snb_jkt_ivb_ivt_bdx_hsx {
 	u64 SMM_BWP;
 };
 
-struct BC_cpu_skl_kbl_cfl {
+struct bios_control_register_cpu_skl_kbl_cfl {
 	u64 BIOSWE;
 	u64 BLE;
 	u64 SRC;
@@ -115,7 +115,7 @@ struct BC_cpu_skl_kbl_cfl {
 	u64 BILD;
 };
 
-struct BC_cpu_apl_glk {
+struct bios_control_register_cpu_apl_glk {
 	u64 BIOSWE;
 	u64 BLE;
 	u64 SRC;
@@ -129,7 +129,7 @@ struct BC_cpu_apl_glk {
 	u64 ASE_BWP;
 };
 
-struct BC_cpu_atom_avn {
+struct bios_control_register_cpu_atom_avn {
 	u64 BIOSWE;
 	u64 BLE;
 	u64 SRC;
@@ -137,45 +137,53 @@ struct BC_cpu_atom_avn {
 	u64 SMM_BWP;
 };
 
-struct BC_cpu_atom_byt {
+struct bios_control_register_cpu_atom_byt {
 	u64 BIOSWE;
 	u64 BLE;
 	u64 SRC;
 	u64 SMM_BWP;
 };
 
-struct BC {
+struct bios_control_register {
 	struct RegisterArch register_arch;
 
 	union {
-		struct BC_pch_3xx_4xx_5xx pch_3xx;
-		struct BC_pch_3xx_4xx_5xx pch_4xx;
-		struct BC_pch_3xx_4xx_5xx pch_495;
-		struct BC_pch_3xx_4xx_5xx pch_5xx;
-		struct BC_cpu_snb_jkt_ivb_ivt_bdx_hsx cpu_snb;
-		struct BC_cpu_snb_jkt_ivb_ivt_bdx_hsx cpu_jkt;
-		struct BC_cpu_snb_jkt_ivb_ivt_bdx_hsx cpu_ivb;
-		struct BC_cpu_snb_jkt_ivb_ivt_bdx_hsx cpu_ivt;
-		struct BC_cpu_snb_jkt_ivb_ivt_bdx_hsx cpu_bdw;
-		struct BC_cpu_snb_jkt_ivb_ivt_bdx_hsx cpu_bdx;
-		struct BC_cpu_snb_jkt_ivb_ivt_bdx_hsx cpu_hsx;
-		struct BC_cpu_snb_jkt_ivb_ivt_bdx_hsx cpu_hsw;
-		struct BC_cpu_skl_kbl_cfl cpu_skl;
-		struct BC_cpu_skl_kbl_cfl cpu_kbl;
-		struct BC_cpu_skl_kbl_cfl cpu_cfl;
-		struct BC_cpu_apl_glk cpu_apl;
-		struct BC_cpu_apl_glk cpu_glk;
-		struct BC_cpu_atom_avn cpu_avn;
-		struct BC_cpu_atom_byt cpu_byt;
+		struct bios_control_register_pch_3xx_4xx_5xx pch_3xx;
+		struct bios_control_register_pch_3xx_4xx_5xx pch_4xx;
+		struct bios_control_register_pch_3xx_4xx_5xx pch_495;
+		struct bios_control_register_pch_3xx_4xx_5xx pch_5xx;
+		struct bios_control_register_cpu_snb_jkt_ivb_ivt_bdx_hsx cpu_snb;
+		struct bios_control_register_cpu_snb_jkt_ivb_ivt_bdx_hsx cpu_jkt;
+		struct bios_control_register_cpu_snb_jkt_ivb_ivt_bdx_hsx cpu_ivb;
+		struct bios_control_register_cpu_snb_jkt_ivb_ivt_bdx_hsx cpu_ivt;
+		struct bios_control_register_cpu_snb_jkt_ivb_ivt_bdx_hsx cpu_bdw;
+		struct bios_control_register_cpu_snb_jkt_ivb_ivt_bdx_hsx cpu_bdx;
+		struct bios_control_register_cpu_snb_jkt_ivb_ivt_bdx_hsx cpu_hsx;
+		struct bios_control_register_cpu_snb_jkt_ivb_ivt_bdx_hsx cpu_hsw;
+		struct bios_control_register_cpu_skl_kbl_cfl cpu_skl;
+		struct bios_control_register_cpu_skl_kbl_cfl cpu_kbl;
+		struct bios_control_register_cpu_skl_kbl_cfl cpu_cfl;
+		struct bios_control_register_cpu_apl_glk cpu_apl;
+		struct bios_control_register_cpu_apl_glk cpu_glk;
+		struct bios_control_register_cpu_atom_avn cpu_avn;
+		struct bios_control_register_cpu_atom_byt cpu_byt;
 	};
 };
 
-extern int read_SBASE(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch,
-		      struct SBASE *reg);
-extern int read_BC(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch,
-		   struct BC *reg);
-extern int read_BC_BIOSWE(const struct BC *reg, u64 *value);
-extern int read_BC_BLE(const struct BC *reg, u64 *value);
-extern int read_BC_SMM_BWP(const struct BC *reg, u64 *value);
-extern int read_SBASE_Base(const struct SBASE *reg, u64 *value);
+extern int read_sbase_register(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch,
+			       struct sbase_register *reg);
+extern int read_bios_control_register(enum PCH_Arch pch_arch,
+				      enum CPU_Arch cpu_arch,
+				      struct bios_control_register *reg);
+extern int
+read_bios_control_register_BIOSWE(const struct bios_control_register *reg,
+				  u64 *value);
+extern int
+read_bios_control_register_BLE(const struct bios_control_register *reg,
+			       u64 *value);
+extern int
+read_bios_control_register_SMM_BWP(const struct bios_control_register *reg,
+				   u64 *value);
+extern int read_sbase_register_Base(const struct sbase_register *reg,
+				    u64 *value);
 #endif /* BIOS_DATA_ACCESS_H */

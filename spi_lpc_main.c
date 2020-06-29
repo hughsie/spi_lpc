@@ -27,7 +27,7 @@ static struct dentry *spi_bioswe;
 static struct dentry *spi_ble;
 static struct dentry *spi_smm_bwp;
 
-typedef int Read_BC_Flag_Fn(struct BC *bc, u64 *value);
+typedef int Read_BC_Flag_Fn(struct bios_control_register *bc, u64 *value);
 
 static int get_pci_vid_did(u8 bus, u8 dev, u8 fun, u16 *vid, u16 *did)
 {
@@ -90,7 +90,7 @@ static ssize_t bc_flag_read(struct file *filp, char __user *buf, size_t count,
 	char tmp[BUFFER_SIZE];
 	ssize_t ret;
 	u64 value = 0;
-	struct BC bc;
+	struct bios_control_register bc;
 
 	if (*ppos == BUFFER_SIZE)
 		return 0; /* nothing else to read */
@@ -98,7 +98,7 @@ static ssize_t bc_flag_read(struct file *filp, char __user *buf, size_t count,
 	if (file_inode(filp)->i_private == NULL)
 		return -EIO;
 
-	ret = read_BC(pch_arch, cpu_arch, &bc);
+	ret = read_bios_control_register(pch_arch, cpu_arch, &bc);
 
 	if (ret == 0)
 		ret = ((Read_BC_Flag_Fn *)file_inode(filp)->i_private)(&bc,
@@ -143,9 +143,9 @@ static int __init mod_init(void)
 		}                                                              \
 	} while (0)
 
-	create_file(bioswe, read_BC_BIOSWE);
-	create_file(ble, read_BC_BLE);
-	create_file(smm_bwp, read_BC_SMM_BWP);
+	create_file(bioswe, read_bios_control_register_BIOSWE);
+	create_file(ble, read_bios_control_register_BLE);
+	create_file(smm_bwp, read_bios_control_register_SMM_BWP);
 
 	return 0;
 

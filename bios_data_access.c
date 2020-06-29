@@ -24,7 +24,8 @@
 static int read_SPIBAR(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch,
 		       u64 *offset);
 
-static int read_SBASE_atom_avn_byt(struct SBASE_atom_avn_byt *reg)
+static int
+read_sbase_register_atom_avn_byt(struct sbase_register_atom_avn_byt *reg)
 {
 	u32 value;
 	const int ret = pci_read_dword(&value, 0x0, 0x1f, 0x0, 0x54);
@@ -41,8 +42,8 @@ static int read_SBASE_atom_avn_byt(struct SBASE_atom_avn_byt *reg)
 	return 0;
 }
 
-int read_SBASE(enum PCH_Arch pch_arch __maybe_unused, enum CPU_Arch cpu_arch,
-	       struct SBASE *reg)
+int read_sbase_register(enum PCH_Arch pch_arch __maybe_unused,
+			enum CPU_Arch cpu_arch, struct sbase_register *reg)
 {
 	int ret = 0;
 
@@ -52,16 +53,17 @@ int read_SBASE(enum PCH_Arch pch_arch __maybe_unused, enum CPU_Arch cpu_arch,
 	switch (cpu_arch) {
 	case cpu_avn:
 	case cpu_byt:
-		ret = read_SBASE_atom_avn_byt(&reg->cpu_byt);
+		ret = read_sbase_register_atom_avn_byt(&reg->cpu_byt);
 		break;
 	default:
 		ret = -EIO;
 	}
 	return ret;
 }
-EXPORT_SYMBOL_GPL(read_SBASE);
+EXPORT_SYMBOL_GPL(read_sbase_register);
 
-static int read_BC_pch_3xx_4xx_5xx(struct BC_pch_3xx_4xx_5xx *reg)
+static int read_bios_control_register_pch_3xx_4xx_5xx(
+	struct bios_control_register_pch_3xx_4xx_5xx *reg)
 {
 	u32 value;
 	const int ret = pci_read_dword(&value, 0x0, 0x1f, 0x5, 0xdc);
@@ -83,8 +85,8 @@ static int read_BC_pch_3xx_4xx_5xx(struct BC_pch_3xx_4xx_5xx *reg)
 	return 0;
 }
 
-static int
-read_BC_cpu_snb_jkt_ivb_ivt_bdx_hsx(struct BC_cpu_snb_jkt_ivb_ivt_bdx_hsx *reg)
+static int read_bios_control_register_cpu_snb_jkt_ivb_ivt_bdx_hsx(
+	struct bios_control_register_cpu_snb_jkt_ivb_ivt_bdx_hsx *reg)
 {
 	u32 value;
 	const int ret = pci_read_dword(&value, 0x0, 0x1f, 0x5, 0xdc);
@@ -101,7 +103,8 @@ read_BC_cpu_snb_jkt_ivb_ivt_bdx_hsx(struct BC_cpu_snb_jkt_ivb_ivt_bdx_hsx *reg)
 	return 0;
 }
 
-static int read_BC_cpu_skl_kbl_cfl(struct BC_cpu_skl_kbl_cfl *reg)
+static int read_bios_control_register_cpu_skl_kbl_cfl(
+	struct bios_control_register_cpu_skl_kbl_cfl *reg)
 {
 	u32 value;
 	const int ret = pci_read_dword(&value, 0x0, 0x1f, 0x5, 0xdc);
@@ -120,7 +123,8 @@ static int read_BC_cpu_skl_kbl_cfl(struct BC_cpu_skl_kbl_cfl *reg)
 	return 0;
 }
 
-static int read_BC_cpu_apl_glk(struct BC_cpu_apl_glk *reg)
+static int read_bios_control_register_cpu_apl_glk(
+	struct bios_control_register_cpu_apl_glk *reg)
 {
 	u32 value;
 	const int ret = pci_read_dword(&value, 0x0, 0xd, 0x2, 0xdc);
@@ -143,8 +147,9 @@ static int read_BC_cpu_apl_glk(struct BC_cpu_apl_glk *reg)
 	return 0;
 }
 
-static int read_BC_cpu_atom_avn(struct BC_cpu_atom_avn *reg,
-				enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch)
+static int read_bios_control_register_cpu_atom_avn(
+	struct bios_control_register_cpu_atom_avn *reg, enum PCH_Arch pch_arch,
+	enum CPU_Arch cpu_arch)
 {
 	u8 value;
 	int ret;
@@ -167,8 +172,9 @@ static int read_BC_cpu_atom_avn(struct BC_cpu_atom_avn *reg,
 	return 0;
 }
 
-static int read_BC_cpu_atom_byt(struct BC_cpu_atom_byt *reg,
-				enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch)
+static int read_bios_control_register_cpu_atom_byt(
+	struct bios_control_register_cpu_atom_byt *reg, enum PCH_Arch pch_arch,
+	enum CPU_Arch cpu_arch)
 {
 	u32 value;
 	int ret;
@@ -190,7 +196,8 @@ static int read_BC_cpu_atom_byt(struct BC_cpu_atom_byt *reg,
 	return 0;
 }
 
-int read_BC(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch, struct BC *reg)
+int read_bios_control_register(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch,
+			       struct bios_control_register *reg)
 {
 	int ret = 0;
 
@@ -202,7 +209,7 @@ int read_BC(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch, struct BC *reg)
 	case pch_4xx:
 	case pch_495:
 	case pch_5xx:
-		ret = read_BC_pch_3xx_4xx_5xx(&reg->pch_5xx);
+		ret = read_bios_control_register_pch_3xx_4xx_5xx(&reg->pch_5xx);
 		break;
 	default:
 		reg->register_arch.source = RegSource_CPU;
@@ -217,25 +224,27 @@ int read_BC(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch, struct BC *reg)
 		case cpu_bdx:
 		case cpu_hsx:
 		case cpu_hsw:
-			ret = read_BC_cpu_snb_jkt_ivb_ivt_bdx_hsx(
+			ret = read_bios_control_register_cpu_snb_jkt_ivb_ivt_bdx_hsx(
 				&reg->cpu_hsw);
 			break;
 		case cpu_skl:
 		case cpu_kbl:
 		case cpu_cfl:
-			ret = read_BC_cpu_skl_kbl_cfl(&reg->cpu_cfl);
+			ret = read_bios_control_register_cpu_skl_kbl_cfl(
+				&reg->cpu_cfl);
 			break;
 		case cpu_apl:
 		case cpu_glk:
-			ret = read_BC_cpu_apl_glk(&reg->cpu_glk);
+			ret = read_bios_control_register_cpu_apl_glk(
+				&reg->cpu_glk);
 			break;
 		case cpu_avn:
-			ret = read_BC_cpu_atom_avn(&reg->cpu_avn, pch_arch,
-						   cpu_arch);
+			ret = read_bios_control_register_cpu_atom_avn(
+				&reg->cpu_avn, pch_arch, cpu_arch);
 			break;
 		case cpu_byt:
-			ret = read_BC_cpu_atom_byt(&reg->cpu_byt, pch_arch,
-						   cpu_arch);
+			ret = read_bios_control_register_cpu_atom_byt(
+				&reg->cpu_byt, pch_arch, cpu_arch);
 			break;
 		default:
 			ret = -EIO;
@@ -243,7 +252,7 @@ int read_BC(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch, struct BC *reg)
 	}
 	return ret;
 }
-EXPORT_SYMBOL_GPL(read_BC);
+EXPORT_SYMBOL_GPL(read_bios_control_register);
 
 int read_SPIBAR(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch, u64 *offset)
 {
@@ -253,11 +262,11 @@ int read_SPIBAR(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch, u64 *offset)
 	switch (cpu_arch) {
 	case cpu_avn:
 	case cpu_byt: {
-		struct SBASE reg;
+		struct sbase_register reg;
 
-		ret = read_SBASE(pch_arch, cpu_arch, &reg);
+		ret = read_sbase_register(pch_arch, cpu_arch, &reg);
 		if (ret == 0) {
-			ret = read_SBASE_Base(&reg, &field_offset);
+			ret = read_sbase_register_Base(&reg, &field_offset);
 			*offset = field_offset + 0;
 		}
 	} break;
@@ -268,7 +277,8 @@ int read_SPIBAR(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch, u64 *offset)
 	return ret;
 }
 
-int read_BC_BIOSWE(const struct BC *reg, u64 *value)
+int read_bios_control_register_BIOSWE(const struct bios_control_register *reg,
+				      u64 *value)
 {
 	int ret = 0;
 
@@ -352,9 +362,10 @@ int read_BC_BIOSWE(const struct BC *reg, u64 *value)
 	}
 	return ret;
 }
-EXPORT_SYMBOL_GPL(read_BC_BIOSWE);
+EXPORT_SYMBOL_GPL(read_bios_control_register_BIOSWE);
 
-int read_BC_BLE(const struct BC *reg, u64 *value)
+int read_bios_control_register_BLE(const struct bios_control_register *reg,
+				   u64 *value)
 {
 	int ret = 0;
 
@@ -438,9 +449,10 @@ int read_BC_BLE(const struct BC *reg, u64 *value)
 	}
 	return ret;
 }
-EXPORT_SYMBOL_GPL(read_BC_BLE);
+EXPORT_SYMBOL_GPL(read_bios_control_register_BLE);
 
-int read_BC_SMM_BWP(const struct BC *reg, u64 *value)
+int read_bios_control_register_SMM_BWP(const struct bios_control_register *reg,
+				       u64 *value)
 {
 	int ret = 0;
 
@@ -524,9 +536,9 @@ int read_BC_SMM_BWP(const struct BC *reg, u64 *value)
 	}
 	return ret;
 }
-EXPORT_SYMBOL_GPL(read_BC_SMM_BWP);
+EXPORT_SYMBOL_GPL(read_bios_control_register_SMM_BWP);
 
-int read_SBASE_Base(const struct SBASE *reg, u64 *value)
+int read_sbase_register_Base(const struct sbase_register *reg, u64 *value)
 {
 	int ret = 0;
 
@@ -555,4 +567,4 @@ int read_SBASE_Base(const struct SBASE *reg, u64 *value)
 	}
 	return ret;
 }
-EXPORT_SYMBOL_GPL(read_SBASE_Base);
+EXPORT_SYMBOL_GPL(read_sbase_register_Base);
