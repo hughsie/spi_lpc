@@ -10,7 +10,7 @@
 
 #include "viddid_arch_map.h"
 
-int viddid2pch_arch(u64 vid, u64 did, enum PCH_Arch *arch)
+int viddid2pch_arch(u64 vid, u64 did, enum pch_arch_t *arch)
 {
 	switch (vid) {
 	case 0x8086: /* INTEL */
@@ -396,7 +396,7 @@ int viddid2pch_arch(u64 vid, u64 did, enum PCH_Arch *arch)
 	}
 }
 
-int viddid2cpu_arch(u64 vid, u64 did, enum CPU_Arch *arch)
+int viddid2cpu_arch(u64 vid, u64 did, enum cpu_arch_t *arch)
 {
 	switch (vid) {
 	case 0x8086: /* INTEL */

@@ -19,15 +19,15 @@
 #define LOW_WORD(x) ((x) & WORD_MASK)
 #define HIGH_WORD(x) ((x) >> ((SIZE_WORD * 8)) & WORD_MASK)
 
-static enum PCH_Arch pch_arch;
-static enum CPU_Arch cpu_arch;
+static enum pch_arch_t pch_arch;
+static enum cpu_arch_t cpu_arch;
 
 static struct dentry *spi_dir;
 static struct dentry *spi_bioswe;
 static struct dentry *spi_ble;
 static struct dentry *spi_smm_bwp;
 
-typedef int Read_BC_Flag_Fn(struct spi_bc *bc, u64 *value);
+typedef int read_bc_flag_fn(struct spi_bc *bc, u64 *value);
 
 static int get_pci_vid_did(u8 bus, u8 dev, u8 fun, u16 *vid, u16 *did)
 {
@@ -41,7 +41,7 @@ static int get_pci_vid_did(u8 bus, u8 dev, u8 fun, u16 *vid, u16 *did)
 	return ret;
 }
 
-static int get_pch_arch(enum PCH_Arch *pch_arch)
+static int get_pch_arch(enum pch_arch_t *pch_arch)
 {
 	u16 pch_vid;
 	u16 pch_did;
@@ -56,7 +56,7 @@ static int get_pch_arch(enum PCH_Arch *pch_arch)
 	return ret;
 }
 
-static int get_cpu_arch(enum CPU_Arch *cpu_arch)
+static int get_cpu_arch(enum cpu_arch_t *cpu_arch)
 {
 	u16 cpu_vid;
 	u16 cpu_did;
@@ -71,7 +71,7 @@ static int get_cpu_arch(enum CPU_Arch *cpu_arch)
 	return ret;
 }
 
-static int get_pch_cpu(enum PCH_Arch *pch_arch, enum CPU_Arch *cpu_arch)
+static int get_pch_cpu(enum pch_arch_t *pch_arch, enum cpu_arch_t *cpu_arch)
 {
 	const int cpu_res = get_cpu_arch(cpu_arch);
 	const int pch_res = get_pch_arch(pch_arch);
@@ -101,7 +101,7 @@ static ssize_t bc_flag_read(struct file *filp, char __user *buf, size_t count,
 	ret = spi_read_bc(pch_arch, cpu_arch, &bc);
 
 	if (ret == 0)
-		ret = ((Read_BC_Flag_Fn *)file_inode(filp)->i_private)(&bc,
+		ret = ((read_bc_flag_fn *)file_inode(filp)->i_private)(&bc,
 								       &value);
 
 	if (ret != 0)

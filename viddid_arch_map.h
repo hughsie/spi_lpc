@@ -11,7 +11,7 @@
 
 #include "bios_data_access.h"
 
-int viddid2pch_arch(u64 vid, u64 did, enum PCH_Arch *arch);
-int viddid2cpu_arch(u64 vid, u64 did, enum CPU_Arch *arch);
+int viddid2pch_arch(u64 vid, u64 did, enum pch_arch_t *arch);
+int viddid2cpu_arch(u64 vid, u64 did, enum cpu_arch_t *arch);
 
 #endif /* VIDDID_ARCH_MAP_H */

@@ -21,7 +21,7 @@
 #define extract_bits_shifted(type, value, start, size)                         \
 	(extract_bits(type, value, start, size) >> (start))
 
-static int read_spibar(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch,
+static int read_spibar(enum pch_arch_t pch_arch, enum cpu_arch_t cpu_arch,
 		       u64 *offset);
 
 static int read_sbase_atom_avn_byt(struct sbase_atom_avn_byt *reg)
@@ -41,12 +41,12 @@ static int read_sbase_atom_avn_byt(struct sbase_atom_avn_byt *reg)
 	return 0;
 }
 
-int spi_read_sbase(enum PCH_Arch pch_arch __maybe_unused,
-		   enum CPU_Arch cpu_arch, struct spi_sbase *reg)
+int spi_read_sbase(enum pch_arch_t pch_arch __maybe_unused,
+		   enum cpu_arch_t cpu_arch, struct spi_sbase *reg)
 {
 	int ret = 0;
 
-	reg->register_arch.source = RegSource_CPU;
+	reg->register_arch.source = reg_source_cpu;
 	reg->register_arch.cpu_arch = cpu_arch;
 
 	switch (cpu_arch) {
@@ -144,7 +144,8 @@ static int read_bc_cpu_apl_glk(struct bc_cpu_apl_glk *reg)
 }
 
 static int read_bc_cpu_atom_avn(struct bc_cpu_atom_avn *reg,
-				enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch)
+				enum pch_arch_t pch_arch,
+				enum cpu_arch_t cpu_arch)
 {
 	u8 value;
 	int ret;
@@ -168,7 +169,8 @@ static int read_bc_cpu_atom_avn(struct bc_cpu_atom_avn *reg,
 }
 
 static int read_bc_cpu_atom_byt(struct bc_cpu_atom_byt *reg,
-				enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch)
+				enum pch_arch_t pch_arch,
+				enum cpu_arch_t cpu_arch)
 {
 	u32 value;
 	int ret;
@@ -190,12 +192,12 @@ static int read_bc_cpu_atom_byt(struct bc_cpu_atom_byt *reg,
 	return 0;
 }
 
-int spi_read_bc(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch,
+int spi_read_bc(enum pch_arch_t pch_arch, enum cpu_arch_t cpu_arch,
 		struct spi_bc *reg)
 {
 	int ret = 0;
 
-	reg->register_arch.source = RegSource_PCH;
+	reg->register_arch.source = reg_source_pch;
 	reg->register_arch.pch_arch = pch_arch;
 
 	switch (pch_arch) {
@@ -206,7 +208,7 @@ int spi_read_bc(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch,
 		ret = read_bc_pch_3xx_4xx_5xx(&reg->pch_5xx);
 		break;
 	default:
-		reg->register_arch.source = RegSource_CPU;
+		reg->register_arch.source = reg_source_cpu;
 		reg->register_arch.cpu_arch = cpu_arch;
 
 		switch (cpu_arch) {
@@ -246,7 +248,7 @@ int spi_read_bc(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch,
 }
 EXPORT_SYMBOL_GPL(spi_read_bc);
 
-int read_spibar(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch, u64 *offset)
+int read_spibar(enum pch_arch_t pch_arch, enum cpu_arch_t cpu_arch, u64 *offset)
 {
 	int ret = 0;
 	u64 field_offset;
@@ -274,7 +276,7 @@ int spi_read_bc_bioswe(const struct spi_bc *reg, u64 *value)
 	int ret = 0;
 
 	switch (reg->register_arch.source) {
-	case RegSource_PCH:
+	case reg_source_pch:
 		switch (reg->register_arch.pch_arch) {
 		case pch_3xx:
 			*value = reg->pch_3xx.bioswe;
@@ -294,7 +296,7 @@ int spi_read_bc_bioswe(const struct spi_bc *reg, u64 *value)
 			*value = 0;
 		}
 		break;
-	case RegSource_CPU:
+	case reg_source_cpu:
 		switch (reg->register_arch.cpu_arch) {
 		case cpu_snb:
 			*value = reg->cpu_snb.bioswe;
@@ -360,7 +362,7 @@ int spi_read_bc_ble(const struct spi_bc *reg, u64 *value)
 	int ret = 0;
 
 	switch (reg->register_arch.source) {
-	case RegSource_PCH:
+	case reg_source_pch:
 		switch (reg->register_arch.pch_arch) {
 		case pch_3xx:
 			*value = reg->pch_3xx.ble;
@@ -380,7 +382,7 @@ int spi_read_bc_ble(const struct spi_bc *reg, u64 *value)
 			*value = 0;
 		}
 		break;
-	case RegSource_CPU:
+	case reg_source_cpu:
 		switch (reg->register_arch.cpu_arch) {
 		case cpu_snb:
 			*value = reg->cpu_snb.ble;
@@ -446,7 +448,7 @@ int spi_read_bc_smm_bwp(const struct spi_bc *reg, u64 *value)
 	int ret = 0;
 
 	switch (reg->register_arch.source) {
-	case RegSource_PCH:
+	case reg_source_pch:
 		switch (reg->register_arch.pch_arch) {
 		case pch_3xx:
 			*value = reg->pch_3xx.smm_bwp;
@@ -466,7 +468,7 @@ int spi_read_bc_smm_bwp(const struct spi_bc *reg, u64 *value)
 			*value = 0;
 		}
 		break;
-	case RegSource_CPU:
+	case reg_source_cpu:
 		switch (reg->register_arch.cpu_arch) {
 		case cpu_snb:
 			*value = reg->cpu_snb.smm_bwp;
@@ -532,11 +534,11 @@ int spi_read_sbase_base(const struct spi_sbase *reg, u64 *value)
 	int ret = 0;
 
 	switch (reg->register_arch.source) {
-	case RegSource_PCH:
+	case reg_source_pch:
 		ret = -EIO; /* no PCH archs have this field */
 		*value = 0;
 		break;
-	case RegSource_CPU:
+	case reg_source_cpu:
 		switch (reg->register_arch.cpu_arch) {
 		case cpu_avn:
 			*value = reg->cpu_avn.base;

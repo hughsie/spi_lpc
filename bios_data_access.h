@@ -10,7 +10,7 @@
 
 #include <linux/types.h>
 
-enum PCH_Arch {
+enum pch_arch_t {
 	pch_none,
 	pch_6_c200,
 	pch_7_c210,
@@ -28,10 +28,10 @@ enum PCH_Arch {
 	pch_4xx,
 	pch_495,
 	pch_5xx,
-	PCH_Archs_count
+	pch_archs_count
 };
 
-enum CPU_Arch {
+enum cpu_arch_t {
 	cpu_none,
 	cpu_bdw,
 	cpu_bdx,
@@ -53,17 +53,17 @@ enum CPU_Arch {
 	cpu_glk,
 	cpu_tgl,
 	cpu_amd,
-	CPU_Archs_count
+	cpu_archs_count
 };
 
-enum RegisterSource { RegSource_PCH, RegSource_CPU };
+enum register_source_t { reg_source_pch, reg_source_cpu };
 
-struct RegisterArch {
-	enum RegisterSource source;
+struct register_arch_t {
+	enum register_source_t source;
 
 	union {
-		enum PCH_Arch pch_arch;
-		enum CPU_Arch cpu_arch;
+		enum pch_arch_t pch_arch;
+		enum cpu_arch_t cpu_arch;
 	};
 };
 
@@ -76,7 +76,7 @@ struct sbase_atom_avn_byt {
 };
 
 struct spi_sbase {
-	struct RegisterArch register_arch;
+	struct register_arch_t register_arch;
 
 	union {
 		struct sbase_atom_avn_byt cpu_avn;
@@ -145,7 +145,7 @@ struct bc_cpu_atom_byt {
 };
 
 struct spi_bc {
-	struct RegisterArch register_arch;
+	struct register_arch_t register_arch;
 
 	union {
 		struct bc_pch_3xx_4xx_5xx pch_3xx;
@@ -170,9 +170,9 @@ struct spi_bc {
 	};
 };
 
-extern int spi_read_sbase(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch,
+extern int spi_read_sbase(enum pch_arch_t pch_arch, enum cpu_arch_t cpu_arch,
 			  struct spi_sbase *reg);
-extern int spi_read_bc(enum PCH_Arch pch_arch, enum CPU_Arch cpu_arch,
+extern int spi_read_bc(enum pch_arch_t pch_arch, enum cpu_arch_t cpu_arch,
 		       struct spi_bc *reg);
 extern int spi_read_bc_bioswe(const struct spi_bc *reg, u64 *value);
 extern int spi_read_bc_ble(const struct spi_bc *reg, u64 *value);
